@@ -1,0 +1,112 @@
+@model TalentTrack.Models.Interview
+
+@{
+    ViewData["Title"] = "Schedule Interview";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header border-0 py-3 px-4" style="background:var(--tt-gradient-primary);">
+                <h5 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-calendar-plus me-2"></i>Schedule New Interview
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+
+                    <div class="row g-3">
+                        <!-- Candidate -->
+                        <div class="col-md-6">
+                            <label asp-for="CandidateId" class="form-label fw-medium">
+                                <i class="bi bi-person me-1 text-primary"></i>Candidate
+                            </label>
+                            <select asp-for="CandidateId" class="form-select" asp-items="ViewBag.Candidates" required>
+                                <option value="">-- Select Candidate --</option>
+                            </select>
+                            <span asp-validation-for="CandidateId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Job -->
+                        <div class="col-md-6">
+                            <label asp-for="JobId" class="form-label fw-medium">
+                                <i class="bi bi-briefcase me-1 text-primary"></i>Position / Job
+                            </label>
+                            <select asp-for="JobId" class="form-select" asp-items="ViewBag.Jobs" required>
+                                <option value="">-- Select Job --</option>
+                            </select>
+                            <span asp-validation-for="JobId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Interviewer -->
+                        <div class="col-md-6">
+                            <label asp-for="InterviewerId" class="form-label fw-medium">
+                                <i class="bi bi-person-check me-1 text-success"></i>Assign Interviewer
+                            </label>
+                            <select asp-for="InterviewerId" class="form-select" asp-items="ViewBag.Interviewers">
+                                <option value="">-- Select Interviewer --</option>
+                            </select>
+                            <span class="text-muted" style="font-size:0.8rem;">Optional — assign who will conduct the interview</span>
+                        </div>
+
+                        <!-- Mode -->
+                        <div class="col-md-6">
+                            <label asp-for="Mode" class="form-label fw-medium">
+                                <i class="bi bi-camera-video me-1 text-info"></i>Interview Mode
+                            </label>
+                            <select asp-for="Mode" class="form-select">
+                                <option value="">-- Select Mode --</option>
+                                <option value="Online">Online (Video Call)</option>
+                                <option value="Offline">Offline (In-Person)</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="Phone">Phone Screen</option>
+                            </select>
+                        </div>
+
+                        <!-- Date & Time -->
+                        <div class="col-md-6">
+                            <label asp-for="InterviewDate" class="form-label fw-medium">
+                                <i class="bi bi-clock me-1 text-warning"></i>Date &amp; Time (Future Only)
+                            </label>
+                            <input asp-for="InterviewDate" type="datetime-local" class="form-control"
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
+                            <span asp-validation-for="InterviewDate" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-medium">
+                                <i class="bi bi-flag me-1 text-secondary"></i>Status
+                            </label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Scheduled">Scheduled</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-medium">
+                                <i class="bi bi-sticky me-1 text-secondary"></i>Notes / Instructions
+                            </label>
+                            <textarea asp-for="Notes" class="form-control" rows="2"
+                                      placeholder="e.g. Focus on system design, bring portfolio..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-calendar-check me-1"></i>Schedule Interview
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

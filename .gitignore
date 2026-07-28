@@ -1,0 +1,53 @@
+## Ignore Visual Studio Temporary Files and Build Results
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# Mono auto generated files
+mono_crash.*
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPS/
+[Rr]elease/
+[Rr]eleasePS/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache directory
+.vs/
+
+# Output directories
+Publish/
+publish/
+
+# Local Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.development.local
+.env.production.local
+.env.test.local
+
+# User Secrets / App Settings
+appsettings.local.json
+secrets.json
+
+# Rider
+.idea/
+*.sln.iml

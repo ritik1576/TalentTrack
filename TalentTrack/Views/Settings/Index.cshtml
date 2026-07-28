@@ -1,0 +1,267 @@
+@{
+    ViewData["Title"] = "Settings";
+    string userRole = Context.Session.GetString("UserRole") ?? "";
+    string userName = Context.Session.GetString("UserName") ?? "User";
+}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1"><i class="bi bi-gear-fill text-secondary me-2"></i>Settings</h2>
+        <p class="text-muted mb-0">Manage your account preferences and security settings.</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <!-- Settings Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-3">
+                    <button class="tt-settings-tab active" onclick="showTab('security', this)">
+                        <i class="bi bi-shield-lock-fill"></i> Security
+                    </button>
+                    <button class="tt-settings-tab" onclick="showTab('notifications', this)">
+                        <i class="bi bi-bell-fill"></i> Notifications
+                    </button>
+                    <button class="tt-settings-tab" onclick="showTab('appearance', this)">
+                        <i class="bi bi-palette-fill"></i> Appearance
+                    </button>
+                    <button class="tt-settings-tab" onclick="showTab('privacy', this)">
+                        <i class="bi bi-eye-slash-fill"></i> Privacy
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="col-lg-9">
+
+            <!-- Security Tab -->
+            <div id="tab-security">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-key-fill me-2 text-primary"></i>Change Password</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-controller="Settings" asp-action="ChangePassword" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-medium">Current Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <input type="password" name="currentPassword" class="form-control" placeholder="Current password" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-medium">New Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                        <input type="password" name="newPassword" class="form-control" placeholder="New password" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-medium">Confirm New Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                        <input type="password" name="confirmPassword" class="form-control" placeholder="Confirm new password" required />
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="bi bi-check-lg me-1"></i>Update Password
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-shield-check-fill me-2 text-success"></i>Account Security</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <div class="fw-medium">Two-Factor Authentication</div>
+                                <small class="text-muted">Add extra security to your account</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="twoFA" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <div class="fw-medium">Login Alerts</div>
+                                <small class="text-muted">Notify on new login from different device</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="loginAlerts" checked />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <div class="fw-medium">Session Timeout</div>
+                                <small class="text-muted">Auto logout after 8 hours of inactivity</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="tab-notifications" style="display:none;">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill me-2 text-warning"></i>Notification Preferences</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @foreach (var notif in new[] {
+                            ("New Interview Scheduled", "Get notified when an interview is scheduled", true),
+                            ("Interview Reminder", "Reminder 1 hour before your interview", true),
+                            ("Feedback Submitted", "When interviewer submits feedback", true),
+                            ("New Candidate Added", "When a new candidate is added", false),
+                            ("Job Status Changed", "When a job status is updated", false)
+                        })
+                        {
+                            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                                <div>
+                                    <div class="fw-medium">@notif.Item1</div>
+                                    <small class="text-muted">@notif.Item2</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" @(notif.Item3 ? "checked" : "") />
+                                </div>
+                            </div>
+                        }
+                        <div class="mt-3">
+                            <button class="btn btn-primary px-4" onclick="alert('Notification preferences saved! (Demo)')">
+                                <i class="bi bi-check-lg me-1"></i>Save Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appearance Tab -->
+            <div id="tab-appearance" style="display:none;">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-palette-fill me-2 text-info"></i>Appearance Settings</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Theme</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="theme" id="themeLight" checked />
+                                    <label class="form-check-label" for="themeLight">
+                                        <i class="bi bi-sun me-1"></i>Light
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="theme" id="themeDark" />
+                                    <label class="form-check-label" for="themeDark">
+                                        <i class="bi bi-moon-stars me-1"></i>Dark
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Language</label>
+                            <select class="form-select" style="max-width:250px;">
+                                <option selected>English</option>
+                                <option>Hindi</option>
+                                <option>Spanish</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">Date Format</label>
+                            <select class="form-select" style="max-width:250px;">
+                                <option selected>DD MMM YYYY</option>
+                                <option>MM/DD/YYYY</option>
+                                <option>YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary px-4" onclick="alert('Appearance settings saved! (Demo)')">
+                            <i class="bi bi-check-lg me-1"></i>Save Appearance
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Tab -->
+            <div id="tab-privacy" style="display:none;">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-eye-slash-fill me-2 text-secondary"></i>Privacy Settings</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                            <div>
+                                <div class="fw-medium">Profile Visibility</div>
+                                <small class="text-muted">Allow other team members to view your profile</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                            <div>
+                                <div class="fw-medium">Activity Tracking</div>
+                                <small class="text-muted">Track your usage for personalized experience</small>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked />
+                            </div>
+                        </div>
+                        <div class="py-3">
+                            <div class="fw-medium text-danger">Danger Zone</div>
+                            <small class="text-muted">Permanently delete your account and all data</small>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-danger btn-sm" onclick="alert('Account deletion is disabled in demo mode.')">
+                                    <i class="bi bi-trash3 me-1"></i>Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function showTab(tabName, btn) {
+        // Hide all tabs
+        ['security','notifications','appearance','privacy'].forEach(t => {
+            document.getElementById('tab-' + t).style.display = 'none';
+        });
+        // Remove active from all buttons
+        document.querySelectorAll('.tt-settings-tab').forEach(b => b.classList.remove('active'));
+        // Show selected tab
+        document.getElementById('tab-' + tabName).style.display = '';
+        btn.classList.add('active');
+    }
+</script>
+}

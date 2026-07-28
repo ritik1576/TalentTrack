@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Help & Support";
+}
+
+<div class="container-fluid">
+
+    <!-- Help Hero -->
+    <div class="tt-help-hero">
+        <div class="tt-icon-bubble mx-auto mb-3" style="width:64px;height:64px;font-size:1.8rem;background:rgba(255,255,255,0.2);">
+            <i class="bi bi-question-circle-fill text-white"></i>
+        </div>
+        <h2 class="fw-bold mb-2">How Can We Help You?</h2>
+        <p class="opacity-80 mb-0">Find answers to common questions or contact our support team.</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- FAQ Section -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-dots-fill me-2 text-primary"></i>Frequently Asked Questions</h5>
+                </div>
+                <div class="card-body p-4">
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            How do I schedule an interview?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            Go to the <strong>Interviews</strong> section in the sidebar and click "Schedule New Interview". Select the candidate, job position, date & time, assign an interviewer, and click Schedule.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            What is the difference between Recruiter and Interviewer roles?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            <strong>Recruiters</strong> have full access — they manage jobs, candidates, schedule interviews, and view all feedback. <strong>Interviewers</strong> see only their assigned interviews and can submit feedback for candidates they interview.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            How does the interviewer see their scheduled interviews?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            When an interviewer logs in, they land on their Dashboard which shows <strong>Today's Interviews</strong> and <strong>Upcoming Interviews</strong> — displaying the candidate name, job, time, and mode.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            How do I submit feedback for a candidate?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            As an Interviewer, click <strong>"Give Feedback"</strong> next to any interview on your dashboard. Fill in the star rating, skill scores (Technical, Communication, Problem Solving), strengths, weaknesses, and your Hire/Hold/Reject recommendation.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            Can I edit my profile information?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            Yes! Click "My Profile" in the sidebar. Both Recruiters and Interviewers can update their name, phone, department, specialization, LinkedIn, and bio.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            How do I add a new interviewer to the system?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            Currently, interviewers are added directly to the database. A future version will include an admin panel for managing interviewer accounts.
+                        </div>
+                    </div>
+
+                    <div class="tt-faq-item">
+                        <div class="tt-faq-q" onclick="toggleFaq(this)">
+                            Where can I see all feedback given for candidates?
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="tt-faq-a">
+                            Recruiters can see all feedback by clicking <strong>Feedback</strong> in the sidebar. Each card shows the candidate's rating, scores, recommendation, and interviewer name.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Quick Links -->
+        <div class="col-lg-4">
+
+            <!-- Contact Form -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-envelope-fill me-2 text-success"></i>Contact Support</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form onsubmit="submitContact(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Your Name</label>
+                            <input type="text" class="form-control" placeholder="Full name" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Email</label>
+                            <input type="email" class="form-control" placeholder="your@email.com" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Subject</label>
+                            <select class="form-select">
+                                <option>Technical Issue</option>
+                                <option>Account Problem</option>
+                                <option>Feature Request</option>
+                                <option>General Inquiry</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Message</label>
+                            <textarea class="form-control" rows="3" placeholder="Describe your issue..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-send me-2"></i>Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Resources -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-lightning-fill me-2 text-warning"></i>Quick Help</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column gap-2">
+                        <a asp-controller="Interview" asp-action="Create" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="bi bi-calendar-plus me-2"></i>Schedule an Interview
+                        </a>
+                        <a asp-controller="Candidates" asp-action="Create" class="btn btn-outline-success btn-sm text-start">
+                            <i class="bi bi-person-plus me-2"></i>Add a Candidate
+                        </a>
+                        <a asp-controller="Jobs" asp-action="Create" class="btn btn-outline-info btn-sm text-start">
+                            <i class="bi bi-briefcase me-2"></i>Post a New Job
+                        </a>
+                        <a asp-controller="Settings" asp-action="Index" class="btn btn-outline-secondary btn-sm text-start">
+                            <i class="bi bi-gear me-2"></i>Account Settings
+                        </a>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="text-muted small text-center">
+                            <i class="bi bi-envelope me-1"></i> support@talenttrack.com<br>
+                            <i class="bi bi-telephone me-1"></i> +91 98765 00001
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function toggleFaq(el) {
+        const answer = el.nextElementSibling;
+        const icon = el.querySelector('i');
+        answer.classList.toggle('open');
+        icon.classList.toggle('bi-chevron-down');
+        icon.classList.toggle('bi-chevron-up');
+    }
+
+    function submitContact(e) {
+        e.preventDefault();
+        alert('Thank you! Your message has been sent. Our support team will respond within 24 hours. (Demo mode)');
+    }
+</script>
+}

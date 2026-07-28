@@ -1,0 +1,192 @@
+@model TalentTrack.Models.InterviewFeedback
+
+@{
+    ViewData["Title"] = "Submit Interview Feedback";
+    var interview = ViewBag.Interview as TalentTrack.Models.Interview;
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+
+            <!-- Header -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="tt-icon-bubble tt-icon-warning" style="width:52px;height:52px;font-size:1.4rem;">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0">Interview Feedback</h4>
+                    <p class="text-muted mb-0 small">
+                        Candidate: <strong>@(interview?.Candidate?.Name ?? "N/A")</strong>
+                        &nbsp;|&nbsp; Position: <strong>@(interview?.Job?.JobTitle ?? "N/A")</strong>
+                        &nbsp;|&nbsp; Date: <strong>@(interview?.InterviewDate.ToString("dd MMM yyyy, hh:mm tt") ?? "")</strong>
+                    </p>
+                </div>
+            </div>
+
+            <form asp-action="Create" method="post">
+                <input type="hidden" asp-for="InterviewId" />
+                <input type="hidden" asp-for="CandidateId" />
+                <input type="hidden" name="Recommendation" id="recommendationValue" value="Hold" />
+
+                <!-- Overall Rating -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-star-fill text-warning me-2"></i>Overall Rating</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-3">How would you rate this candidate overall? (1 = Poor, 5 = Excellent)</p>
+                        <div class="tt-star-rating" id="starRating">
+                            <input type="radio" name="OverallRating" id="star5" value="5" />
+                            <label for="star5" title="Excellent"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="OverallRating" id="star4" value="4" />
+                            <label for="star4" title="Good"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="OverallRating" id="star3" value="3" checked />
+                            <label for="star3" title="Average"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="OverallRating" id="star2" value="2" />
+                            <label for="star2" title="Below Average"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="OverallRating" id="star1" value="1" />
+                            <label for="star1" title="Poor"><i class="bi bi-star-fill"></i></label>
+                        </div>
+                        <div id="ratingLabel" class="text-muted small mt-2">Rating: <strong>3</strong> / 5 — Average</div>
+                    </div>
+                </div>
+
+                <!-- Skill Scores -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Skill Scores</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-4">Rate each skill from 1 to 10.</p>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="fw-medium">Technical Skills</label>
+                                <span id="techVal" class="badge bg-primary">5</span>
+                            </div>
+                            <input type="range" name="TechnicalScore" id="techSlider" class="tt-score-slider"
+                                   min="1" max="10" value="5"
+                                   oninput="updateSlider(this, 'techVal')" />
+                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Expert)</span></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="fw-medium">Communication</label>
+                                <span id="commVal" class="badge bg-success">5</span>
+                            </div>
+                            <input type="range" name="CommunicationScore" id="commSlider" class="tt-score-slider"
+                                   min="1" max="10" value="5"
+                                   oninput="updateSlider(this, 'commVal')" />
+                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Excellent)</span></div>
+                        </div>
+
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="fw-medium">Problem Solving</label>
+                                <span id="probVal" class="badge bg-warning text-dark">5</span>
+                            </div>
+                            <input type="range" name="ProblemSolvingScore" id="probSlider" class="tt-score-slider"
+                                   min="1" max="10" value="5"
+                                   oninput="updateSlider(this, 'probVal')" />
+                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Excellent)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Qualitative Feedback -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-text-fill text-info me-2"></i>Detailed Feedback</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium text-success"><i class="bi bi-plus-circle me-1"></i>Strengths</label>
+                                <textarea name="Strengths" class="form-control" rows="4"
+                                          placeholder="e.g. Strong problem-solving, good knowledge of React, communicates clearly..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium text-danger"><i class="bi bi-dash-circle me-1"></i>Areas to Improve</label>
+                                <textarea name="Weaknesses" class="form-control" rows="4"
+                                          placeholder="e.g. Needs to improve system design knowledge, sometimes verbose..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-medium"><i class="bi bi-sticky me-1"></i>Additional Comments</label>
+                                <textarea name="Comments" class="form-control" rows="3"
+                                          placeholder="Any other notes, observations, or context for the recruiter..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendation -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-check2-circle me-2 text-success"></i>Final Recommendation</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-3">What is your hiring recommendation for this candidate?</p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <button type="button" class="tt-recommend-btn hire" onclick="setRecommendation('Hire', this)">
+                                <i class="bi bi-check-circle-fill me-2"></i>Hire
+                            </button>
+                            <button type="button" class="tt-recommend-btn hold active" onclick="setRecommendation('Hold', this)">
+                                <i class="bi bi-pause-circle-fill me-2"></i>Hold / Consider
+                            </button>
+                            <button type="button" class="tt-recommend-btn reject" onclick="setRecommendation('Reject', this)">
+                                <i class="bi bi-x-circle-fill me-2"></i>Reject
+                            </button>
+                        </div>
+                        <div id="recLabel" class="mt-3 text-muted small">Selected: <strong>Hold</strong></div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-controller="Interviewer" asp-action="Dashboard" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-5">
+                        <i class="bi bi-send-fill me-2"></i>Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Star Rating Labels
+    const ratingLabels = ['', 'Poor', 'Below Average', 'Average', 'Good', 'Excellent'];
+    document.querySelectorAll('#starRating input').forEach(input => {
+        input.addEventListener('change', function () {
+            const v = parseInt(this.value);
+            document.getElementById('ratingLabel').innerHTML =
+                `Rating: <strong>${v}</strong> / 5 — ${ratingLabels[v]}`;
+        });
+    });
+
+    // Slider update
+    function updateSlider(el, valId) {
+        document.getElementById(valId).textContent = el.value;
+        const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+        el.style.setProperty('--val', pct + '%');
+    }
+
+    // Init sliders
+    ['techSlider','commSlider','probSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+        el.style.setProperty('--val', pct + '%');
+    });
+
+    // Recommendation
+    function setRecommendation(val, btn) {
+        document.getElementById('recommendationValue').value = val;
+        document.getElementById('recLabel').innerHTML = `Selected: <strong>${val}</strong>`;
+        document.querySelectorAll('.tt-recommend-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>
+}

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TalentTrack Recruitment Portal</title>
+
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+
+@{
+    string userRole = Context.Session.GetString("UserRole") ?? "";
+    string userName = Context.Session.GetString("UserName") ?? "User";
+    string userEmail = Context.Session.GetString("UserEmail") ?? "";
+    string userInitials = Context.Session.GetString("UserInitials") ?? (userName.Length >= 2 ? userName.Substring(0, 2).ToUpper() : "U");
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "Home";
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+}
+
+@if (ViewData["HideLayoutNav"] is true)
+{
+    <!-- Standalone Layout for Landing/Login Pages -->
+    @RenderBody()
+}
+else
+{
+    <!-- Professional Sidebar Application Layout -->
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+
+            <!-- Sidebar Column -->
+            <div class="col-md-3 col-lg-2 tt-sidebar d-flex flex-column justify-content-between">
+                <div>
+                    <!-- Brand Logo Header -->
+                    <div class="d-flex align-items-center gap-2 mb-4 px-2">
+                        <img src="~/images/logo.png" alt="TalentTrack Logo" class="rounded" style="width: 40px; height: 40px; object-fit: cover;" />
+                        <div>
+                            <div class="tt-brand">TalentTrack</div>
+                            <small class="text-secondary opacity-75" style="font-size: 0.75rem;">Recruitment Suite</small>
+                        </div>
+                    </div>
+
+                    <!-- Role Badge -->
+                    <div class="px-2 mb-3">
+                        @if (userRole == "Admin")
+                        {
+                            <span class="badge bg-danger px-3 py-1"><i class="bi bi-shield-lock me-1"></i>System Admin</span>
+                        }
+                        else if (userRole == "Recruiter")
+                        {
+                            <span class="tt-role-badge-recruiter"><i class="bi bi-person-workspace me-1"></i>Recruiter</span>
+                        }
+                        else if (userRole == "Interviewer")
+                        {
+                            <span class="tt-role-badge-interviewer"><i class="bi bi-person-check me-1"></i>Interviewer</span>
+                        }
+                    </div>
+
+                    <div class="text-uppercase text-secondary fw-bold mb-2 px-2" style="font-size: 0.7rem; letter-spacing: 1px;">Navigation</div>
+
+                    <!-- Navigation Links -->
+                    <nav class="nav flex-column">
+                        @if (userRole == "Admin")
+                        {
+                            <a class="tt-nav-link @(currentController == "Admin" ? "active" : "")"
+                               asp-controller="Admin" asp-action="Index">
+                                <i class="bi bi-shield-check text-danger"></i>
+                                <span>Admin Panel</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-grid-1x2-fill"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "Jobs" ? "active" : "")"
+                               asp-controller="Jobs" asp-action="Index">
+                                <i class="bi bi-briefcase-fill"></i>
+                                <span>Jobs</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "Candidates" ? "active" : "")"
+                               asp-controller="Candidates" asp-action="Index">
+                                <i class="bi bi-people-fill"></i>
+                                <span>Candidates</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "Interview" ? "active" : "")"
+                               asp-controller="Interview" asp-action="Index">
+                                <i class="bi bi-calendar-event-fill"></i>
+                                <span>Interviews</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "Feedback" ? "active" : "")"
+                               asp-controller="Feedback" asp-action="Index">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Feedback</span>
+                            </a>
+                        }
+                        else if (userRole == "Recruiter")
+                        {
+                            <a class="tt-nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-grid-1x2-fill"></i>
+                                <span>Dashboard</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Jobs" ? "active" : "")"
+                               asp-controller="Jobs" asp-action="Index">
+                                <i class="bi bi-briefcase-fill"></i>
+                                <span>Jobs</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Candidates" ? "active" : "")"
+                               asp-controller="Candidates" asp-action="Index">
+                                <i class="bi bi-people-fill"></i>
+                                <span>Candidates</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Interview" ? "active" : "")"
+                               asp-controller="Interview" asp-action="Index">
+                                <i class="bi bi-calendar-event-fill"></i>
+                                <span>Interviews</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Feedback" ? "active" : "")"
+                               asp-controller="Feedback" asp-action="Index">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Feedback</span>
+                            </a>
+                        }
+                        else if (userRole == "Interviewer")
+                        {
+                            <a class="tt-nav-link @(currentController == "Interviewer" && currentAction == "Dashboard" ? "active" : "")"
+                               asp-controller="Interviewer" asp-action="Dashboard">
+                                <i class="bi bi-grid-1x2-fill"></i>
+                                <span>My Dashboard</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Feedback" ? "active" : "")"
+                               asp-controller="Feedback" asp-action="Index">
+                                <i class="bi bi-star-fill"></i>
+                                <span>Feedback Given</span>
+                            </a>
+                        }
+                    </nav>
+
+                    <div class="text-uppercase text-secondary fw-bold mt-4 mb-2 px-2" style="font-size: 0.7rem; letter-spacing: 1px;">Account</div>
+
+                    <nav class="nav flex-column">
+                        @if (userRole == "Recruiter" || userRole == "Admin")
+                        {
+                            <a class="tt-nav-link @(currentController == "Account" && currentAction == "Profile" ? "active" : "")"
+                               asp-controller="Account" asp-action="Profile">
+                                <i class="bi bi-person-badge-fill"></i>
+                                <span>My Profile</span>
+                            </a>
+                        }
+                        else if (userRole == "Interviewer")
+                        {
+                            <a class="tt-nav-link @(currentController == "Interviewer" && currentAction == "Profile" ? "active" : "")"
+                               asp-controller="Interviewer" asp-action="Profile">
+                                <i class="bi bi-person-badge-fill"></i>
+                                <span>My Profile</span>
+                            </a>
+                        }
+
+                        <a class="tt-nav-link @(currentController == "Settings" ? "active" : "")"
+                           asp-controller="Settings" asp-action="Index">
+                            <i class="bi bi-gear-fill"></i>
+                            <span>Settings</span>
+                        </a>
+
+                        <a class="tt-nav-link @(currentController == "Help" ? "active" : "")"
+                           asp-controller="Help" asp-action="Index">
+                            <i class="bi bi-question-circle-fill"></i>
+                            <span>Help &amp; Support</span>
+                        </a>
+
+                        <a class="tt-nav-link text-danger opacity-90"
+                           asp-controller="Account" asp-action="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Footer User Pill in Sidebar -->
+                <div class="p-2 border-top border-secondary border-opacity-25 mt-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="tt-avatar" style="width: 36px; height: 36px; font-size: 0.85rem;">@userInitials</div>
+                        <div class="text-truncate">
+                            <div class="fw-bold text-white small">@userName</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">@userEmail</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-md-9 col-lg-10 d-flex flex-column min-vh-100">
+
+                <!-- Topbar -->
+                <div class="tt-topbar d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fw-semibold text-secondary">
+                            <i class="bi bi-calendar3 me-1"></i> @DateTime.Now.ToString("dd MMMM yyyy")
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Notification Button -->
+                        <div class="dropdown">
+                            <button class="btn btn-light rounded-circle position-relative p-2" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="bi bi-bell fs-5 text-secondary"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">New alerts</span>
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-2" style="width: 320px;">
+                                <li><h6 class="dropdown-header text-uppercase fw-bold text-primary">Notifications</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item rounded p-2 text-wrap small" href="#">
+                                        <div class="fw-bold text-dark"><i class="bi bi-bell-fill text-warning me-1"></i> System Active</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">TalentTrack updates &amp; alerts will appear here.</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Profile Link -->
+                        @if (userRole == "Interviewer")
+                        {
+                            <a asp-controller="Interviewer" asp-action="Profile" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                                <div class="tt-avatar" style="background:linear-gradient(135deg,#10B981,#06B6D4);">@userInitials</div>
+                                <div class="d-none d-sm-block text-start">
+                                    <div class="fw-bold fs-6 leading-tight">@userName</div>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">Interviewer</div>
+                                </div>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Profile" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                                <div class="tt-avatar">@userInitials</div>
+                                <div class="d-none d-sm-block text-start">
+                                    <div class="fw-bold fs-6 leading-tight">@userName</div>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">@(userRole == "Admin" ? "System Admin" : "Recruiter")</div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Page Body Content -->
+                <div class="p-4 p-lg-5 flex-grow-1">
+                    @RenderBody()
+                </div>
+
+                <!-- Footer -->
+                <footer class="bg-white border-top py-3 text-center text-muted small">
+                    &copy; 2026 <strong>TalentTrack</strong> - Recruitment Management System. All rights reserved.
+                </footer>
+            </div>
+
+        </div>
+    </div>
+}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

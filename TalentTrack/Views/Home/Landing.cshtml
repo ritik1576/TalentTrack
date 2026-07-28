@@ -1,0 +1,310 @@
+@{
+    ViewData["Title"] = "TalentTrack — Smart Recruitment Platform";
+    ViewData["HideLayoutNav"] = true;
+}
+
+<div class="tt-landing">
+
+    <!-- Navbar -->
+    <nav class="tt-landing-nav">
+        <div class="d-flex align-items-center gap-2">
+            <img src="~/images/logo.png" alt="TalentTrack Logo" class="rounded" style="width:38px;height:38px;object-fit:cover;" />
+            <span class="tt-brand">TalentTrack</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <a asp-controller="Account" asp-action="Login" class="text-secondary text-decoration-none fw-medium" style="color:#94A3B8!important;">Sign In</a>
+            <a asp-controller="Account" asp-action="Login" class="tt-btn-hero tt-btn-hero-primary" style="padding:0.55rem 1.4rem;font-size:0.9rem;">
+                Get Started <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="tt-hero">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <!-- Left Content -->
+                <div class="col-lg-6 tt-fade-up">
+                    <div class="tt-hero-badge">
+                        <i class="bi bi-stars"></i> Next-Gen Recruitment Suite
+                    </div>
+                    <h1>
+                        Hire <span class="tt-gradient-text">Smarter</span>,<br>
+                        Faster &amp; Better
+                    </h1>
+                    <p class="tt-hero-sub">
+                        TalentTrack unifies your entire recruitment pipeline — from job posting to candidate evaluation — in one powerful, beautiful platform.
+                    </p>
+                    <div class="tt-hero-cta">
+                        <a asp-controller="Account" asp-action="Login" class="tt-btn-hero tt-btn-hero-primary tt-pulse">
+                            <i class="bi bi-rocket-takeoff-fill"></i> Start Recruiting Now
+                        </a>
+                        <a href="#features" class="tt-btn-hero tt-btn-hero-outline">
+                            <i class="bi bi-play-circle"></i> See How It Works
+                        </a>
+                    </div>
+                    <div class="tt-hero-stats">
+                        <div>
+                            <div class="tt-hero-stat-num">500+</div>
+                            <div class="tt-hero-stat-label">Candidates Managed</div>
+                        </div>
+                        <div>
+                            <div class="tt-hero-stat-num">98%</div>
+                            <div class="tt-hero-stat-label">Scheduling Accuracy</div>
+                        </div>
+                        <div>
+                            <div class="tt-hero-stat-num">3x</div>
+                            <div class="tt-hero-stat-label">Faster Hiring</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right — Floating UI Cards -->
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="tt-hero-visual" style="padding: 2rem 1rem; min-height: 420px;">
+
+                        <!-- Main Dashboard Card -->
+                        <div class="tt-glass-card" style="margin-top:2rem;">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div class="tt-icon-bubble tt-icon-primary rounded-2" style="width:32px;height:32px;font-size:0.9rem;">
+                                    <i class="bi bi-grid-1x2-fill"></i>
+                                </div>
+                                <span class="fw-bold text-white small">Recruiter Dashboard</span>
+                                <span class="ms-auto tt-role-badge-recruiter">Recruiter</span>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <div style="background:rgba(99,102,241,0.15);border-radius:10px;padding:0.75rem;text-align:center;">
+                                        <div class="fw-bold text-white">24</div>
+                                        <div style="font-size:0.7rem;color:#64748B;">Jobs</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div style="background:rgba(16,185,129,0.15);border-radius:10px;padding:0.75rem;text-align:center;">
+                                        <div class="fw-bold text-white">156</div>
+                                        <div style="font-size:0.7rem;color:#64748B;">Candidates</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div style="background:rgba(245,158,11,0.15);border-radius:10px;padding:0.75rem;text-align:center;">
+                                        <div class="fw-bold text-white">12</div>
+                                        <div style="font-size:0.7rem;color:#64748B;">Interviews</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Interview row -->
+                            <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:0.75rem;" class="d-flex align-items-center gap-2">
+                                <div class="tt-avatar" style="width:30px;height:30px;font-size:0.7rem;">AK</div>
+                                <div>
+                                    <div class="text-white small fw-medium">Arjun Kumar</div>
+                                    <div style="font-size:0.7rem;color:#64748B;">Today 2:30 PM · Priya Sharma</div>
+                                </div>
+                                <span class="ms-auto badge" style="background:rgba(16,185,129,0.2);color:#10B981;font-size:0.65rem;">Scheduled</span>
+                            </div>
+                        </div>
+
+                        <!-- Floating Interviewer Card -->
+                        <div class="tt-glass-card-sm" style="bottom: -30px; left: -20px; min-width: 200px;">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="tt-avatar" style="width:32px;height:32px;font-size:0.75rem;background:linear-gradient(135deg,#10B981,#06B6D4);">PS</div>
+                                <div>
+                                    <div class="text-white small fw-bold">Priya Sharma</div>
+                                    <span class="tt-role-badge-interviewer" style="font-size:0.65rem;">Interviewer</span>
+                                </div>
+                            </div>
+                            <div style="font-size:0.72rem;color:#64748B;">3 interviews today</div>
+                        </div>
+
+                        <!-- Rating Badge -->
+                        <div class="tt-glass-card-sm" style="top: 10px; right: -10px; min-width: 160px;">
+                            <div class="d-flex align-items-center gap-1 mb-1">
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    <i class="bi bi-star-fill" style="color:#F59E0B;font-size:0.8rem;"></i>
+                                }
+                            </div>
+                            <div class="text-white small fw-bold">Candidate Rated!</div>
+                            <div style="font-size:0.7rem;color:#64748B;">Feedback submitted</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="tt-features" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <div class="tt-section-label">What We Offer</div>
+                <h2 class="tt-section-title">Everything You Need to <span class="tt-gradient-text">Hire Right</span></h2>
+                <p style="color:#64748B;max-width:520px;margin:0 auto;">A complete toolkit for modern recruitment teams — beautiful, powerful, and easy to use.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(99,102,241,0.15);">
+                            <i class="bi bi-people-fill" style="color:#818CF8;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Candidate Pipeline</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Track every candidate from application to offer with full profile management and status tracking.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(16,185,129,0.15);">
+                            <i class="bi bi-calendar-check-fill" style="color:#10B981;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Smart Scheduling</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Schedule interviews in seconds, assign the right interviewer, and get real-time schedule visibility.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(245,158,11,0.15);">
+                            <i class="bi bi-star-fill" style="color:#F59E0B;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Feedback & Ratings</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Structured interview feedback with star ratings, skill scores, and hire/reject recommendations.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(6,182,212,0.15);">
+                            <i class="bi bi-briefcase-fill" style="color:#06B6D4;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Job Management</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Post, manage, and track open positions with detailed job descriptions and skill requirements.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(139,92,246,0.15);">
+                            <i class="bi bi-person-badge-fill" style="color:#A78BFA;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Role-Based Access</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Separate dashboards for Recruiters and Interviewers — each sees exactly what they need.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="tt-feature-card">
+                        <div class="tt-feature-icon" style="background:rgba(239,68,68,0.15);">
+                            <i class="bi bi-graph-up-arrow" style="color:#F87171;"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Recruitment Analytics</h5>
+                        <p style="color:#64748B;font-size:0.9rem;margin:0;">Real-time stats on jobs, candidates, and interviews — make data-driven hiring decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="tt-stats-section">
+        <div class="container">
+            <div class="row text-center g-4">
+                <div class="col-6 col-md-3">
+                    <div class="tt-stat-big">500+</div>
+                    <p style="color:#64748B;margin:0;">Candidates Processed</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="tt-stat-big">120+</div>
+                    <p style="color:#64748B;margin:0;">Interviews Scheduled</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="tt-stat-big">98%</div>
+                    <p style="color:#64748B;margin:0;">Client Satisfaction</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="tt-stat-big">3x</div>
+                    <p style="color:#64748B;margin:0;">Faster Time to Hire</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Cards Section -->
+    <section class="tt-roles-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <div class="tt-section-label">Two Powerful Roles</div>
+                <h2 class="tt-section-title">Built for Every <span class="tt-gradient-text">Team Member</span></h2>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-5">
+                    <div class="tt-role-card">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="tt-feature-icon mb-0" style="background:rgba(99,102,241,0.15);">
+                                <i class="bi bi-person-workspace" style="color:#818CF8;font-size:1.5rem;"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Recruiter</h5>
+                                <span class="tt-role-badge-recruiter">Admin Access</span>
+                            </div>
+                        </div>
+                        <ul style="color:#64748B;list-style:none;padding:0;margin:0;" class="d-flex flex-column gap-2">
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#6366F1;"></i>Manage all Jobs & Candidates</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#6366F1;"></i>Schedule Interviews with Interviewer</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#6366F1;"></i>View today's interview schedule</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#6366F1;"></i>See all feedback & ratings</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#6366F1;"></i>Full profile &amp; settings management</li>
+                        </ul>
+                        <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.06);">
+                            <small style="color:#475569;">Login: recruiter@talenttrack.com</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="tt-role-card">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="tt-feature-icon mb-0" style="background:rgba(16,185,129,0.15);">
+                                <i class="bi bi-person-check-fill" style="color:#10B981;font-size:1.5rem;"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Interviewer</h5>
+                                <span class="tt-role-badge-interviewer">Panel Access</span>
+                            </div>
+                        </div>
+                        <ul style="color:#64748B;list-style:none;padding:0;margin:0;" class="d-flex flex-column gap-2">
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#10B981;"></i>View assigned interviews for today</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#10B981;"></i>See candidate details & job info</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#10B981;"></i>Submit feedback with star rating</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#10B981;"></i>Technical & communication scores</li>
+                            <li><i class="bi bi-check-circle-fill me-2" style="color:#10B981;"></i>Hire / Reject / Hold recommendation</li>
+                        </ul>
+                        <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.06);">
+                            <small style="color:#475569;">Login: interviewer@talenttrack.com</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="tt-cta-section">
+        <div class="container" style="max-width:600px;">
+            <div class="tt-hero-badge d-inline-flex mb-3">
+                <i class="bi bi-lightning-fill"></i> Get Started Today — It's Free
+            </div>
+            <h2 class="tt-section-title mb-3">Ready to Transform Your Hiring?</h2>
+            <p style="color:#64748B;margin-bottom:2rem;">Join hundreds of companies using TalentTrack to hire the best talent faster.</p>
+            <a asp-controller="Account" asp-action="Login" class="tt-btn-hero tt-btn-hero-primary tt-pulse">
+                <i class="bi bi-rocket-takeoff-fill"></i> Launch TalentTrack
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="tt-landing-footer">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                <img src="~/images/logo.png" alt="TalentTrack Logo" style="width:24px;height:24px;object-fit:cover;" />
+                <strong style="color:#E2E8F0;">TalentTrack</strong>
+            </div>
+            <p class="mb-0">&copy; 2026 TalentTrack Recruitment Suite. All rights reserved.</p>
+        </div>
+    </footer>
+
+</div>

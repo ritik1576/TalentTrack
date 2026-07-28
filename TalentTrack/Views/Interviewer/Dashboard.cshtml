@@ -1,0 +1,201 @@
+@model TalentTrack.Models.InterviewerDashboardViewModel
+
+@{
+    ViewData["Title"] = "Interviewer Dashboard";
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-person-check-fill text-success me-2"></i>
+                Welcome, @Model.CurrentInterviewer?.Name!
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-calendar3 me-1"></i>
+                @DateTime.Now.ToString("dddd, dd MMMM yyyy") &mdash; Here are your interviews for today.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="tt-role-badge-interviewer"><i class="bi bi-person-check me-1"></i>Interviewer</span>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="tt-icon-bubble tt-icon-success mx-auto mb-2"><i class="bi bi-calendar-check-fill"></i></div>
+                <h3 class="fw-bold text-success mb-0">@Model.TodayInterviews.Count</h3>
+                <small class="text-muted">Today's Interviews</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="tt-icon-bubble tt-icon-primary mx-auto mb-2"><i class="bi bi-calendar-event-fill"></i></div>
+                <h3 class="fw-bold text-primary mb-0">@Model.UpcomingInterviews.Count</h3>
+                <small class="text-muted">Upcoming</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="tt-icon-bubble tt-icon-warning mx-auto mb-2"><i class="bi bi-clipboard-check-fill"></i></div>
+                <h3 class="fw-bold text-warning mb-0">@Model.TotalInterviewsConducted</h3>
+                <small class="text-muted">Conducted Total</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center">
+                <div class="tt-icon-bubble tt-icon-danger mx-auto mb-2"><i class="bi bi-star-fill"></i></div>
+                <h3 class="fw-bold text-danger mb-0">@Model.FeedbacksGiven</h3>
+                <small class="text-muted">Feedbacks Given</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Interviews -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-calendar-day-fill me-2 text-success"></i>
+                Today's Interview Schedule
+            </h5>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+                @DateTime.Now.ToString("dd MMM yyyy")
+            </span>
+        </div>
+        <div class="card-body p-4">
+            @if (Model.TodayInterviews.Any())
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var iv in Model.TodayInterviews)
+                    {
+                        var hasFeedback = iv.Feedbacks != null && iv.Feedbacks.Any();
+                        <div class="tt-schedule-card today">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="tt-avatar" style="width:48px;height:48px;font-size:1.1rem;">
+                                        @(string.IsNullOrEmpty(iv.Candidate?.Name) ? "?" : iv.Candidate.Name.Substring(0,1).ToUpper())
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="fw-bold">@(iv.Candidate?.Name ?? "N/A")</div>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-briefcase me-1"></i>@(iv.Job?.JobTitle ?? "N/A")
+                                        &nbsp;|&nbsp;
+                                        <i class="bi bi-clock me-1"></i>@iv.InterviewDate.ToString("hh:mm tt")
+                                        @if (!string.IsNullOrEmpty(iv.Mode))
+                                        {
+                                            <span>&nbsp;|&nbsp;<i class="bi bi-camera-video me-1"></i>@iv.Mode</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(iv.Notes))
+                                    {
+                                        <div class="text-muted small mt-1"><i class="bi bi-sticky me-1"></i>@iv.Notes</div>
+                                    }
+                                </div>
+                                <div class="col-auto d-flex gap-2 align-items-center">
+                                    @if (iv.Status == "Completed" || hasFeedback)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">@iv.Status</span>
+                                        <a asp-controller="Feedback" asp-action="Create" asp-route-interviewId="@iv.InterviewId"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-star me-1"></i>Give Feedback
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x text-muted" style="font-size:3rem;"></i>
+                    <p class="text-muted mt-3">No interviews scheduled for today.</p>
+                    <small class="text-muted">Check the upcoming section below for future interviews.</small>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Upcoming Interviews -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-0 py-3 px-4">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-calendar-week-fill me-2 text-primary"></i>Upcoming Interviews
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Candidate</th>
+                            <th>Position</th>
+                            <th>Date & Time</th>
+                            <th>Mode</th>
+                            <th>Status</th>
+                            <th class="pe-4 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpcomingInterviews.Any())
+                        {
+                            @foreach (var iv in Model.UpcomingInterviews)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-medium">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width:32px;height:32px;font-size:12px;">
+                                                @(iv.Candidate?.Name?.Substring(0,1).ToUpper() ?? "?")
+                                            </div>
+                                            @(iv.Candidate?.Name ?? "N/A")
+                                        </div>
+                                    </td>
+                                    <td>@(iv.Job?.JobTitle ?? "N/A")</td>
+                                    <td>
+                                        <div>@iv.InterviewDate.ToString("dd MMM yyyy")</div>
+                                        <small class="text-muted">@iv.InterviewDate.ToString("hh:mm tt")</small>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(iv.Mode))
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">@iv.Mode</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">@iv.Status</span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a asp-controller="Feedback" asp-action="Create" asp-route-interviewId="@iv.InterviewId"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-star"></i> Feedback
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No upcoming interviews assigned.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
