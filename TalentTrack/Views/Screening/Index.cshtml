@@ -1,0 +1,128 @@
+@model TalentTrack.Models.DTOs.ScreeningDashboardViewModel
+
+@{
+    ViewData["Title"] = "Screening";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Screening Dashboard</h2>
+        <p class="text-muted mb-0">Review and screen candidates who have applied for open positions</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+        <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+        <div class="fw-medium">@TempData["Success"]</div>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+        <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+        <div class="fw-medium">@TempData["Error"]</div>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Candidate Name</th>
+                        <th>Applied Job</th>
+                        <th>Applied Date</th>
+                        <th>Application Status</th>
+                        <th>Screening Status</th>
+                        <th class="pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Applications.Any())
+                    {
+                        @foreach (var item in Model.Applications)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-medium text-dark">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center me-2 fw-bold" style="width: 36px; height: 36px;">
+                                            @(string.IsNullOrEmpty(item.CandidateName) ? "?" : item.CandidateName.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <span>@item.CandidateName</span>
+                                    </div>
+                                </td>
+                                <td class="fw-medium">@item.JobTitle</td>
+                                <td>@item.AppliedDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (item.ApplicationStatus == "Applied")
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">@item.ApplicationStatus</span>
+                                    }
+                                    else if (item.ApplicationStatus == "Screened")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">@item.ApplicationStatus</span>
+                                    }
+                                    else if (item.ApplicationStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">@item.ApplicationStatus</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">@item.ApplicationStatus</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ScreeningStatus == "Completed")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-check-circle me-1"></i>@item.ScreeningStatus
+                                        </span>
+                                    }
+                                    else if (item.ScreeningStatus == "In Progress")
+                                    {
+                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-hourglass-split me-1"></i>@item.ScreeningStatus
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-clock me-1"></i>@item.ScreeningStatus
+                                        </span>
+                                    }
+                                </td>
+                                <td class="pe-4 text-end">
+                                    @if (item.ScreeningStatus == "Completed")
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>
+                                            <i class="bi bi-check-circle me-1"></i> Screened
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Screen" asp-route-applicationId="@item.ApplicationId" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-clipboard2-check me-1"></i> Start Screening
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-clipboard2-check display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                <span>No candidate applications found. Applications will appear here when candidates apply for jobs.</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

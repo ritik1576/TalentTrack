@@ -90,6 +90,11 @@ else
                                 <i class="bi bi-people-fill"></i>
                                 <span>Candidates</span>
                             </a>
+                            <a class="tt-nav-link @(currentController == "Screening" ? "active" : "")"
+                               asp-controller="Screening" asp-action="Index">
+                                <i class="bi bi-clipboard2-check-fill"></i>
+                                <span>Screening</span>
+                            </a>
                             <a class="tt-nav-link @(currentController == "Interview" ? "active" : "")"
                                asp-controller="Interview" asp-action="Index">
                                 <i class="bi bi-calendar-event-fill"></i>
@@ -119,6 +124,12 @@ else
                                asp-controller="Candidates" asp-action="Index">
                                 <i class="bi bi-people-fill"></i>
                                 <span>Candidates</span>
+                            </a>
+
+                            <a class="tt-nav-link @(currentController == "Screening" ? "active" : "")"
+                               asp-controller="Screening" asp-action="Index">
+                                <i class="bi bi-clipboard2-check-fill"></i>
+                                <span>Screening</span>
                             </a>
 
                             <a class="tt-nav-link @(currentController == "Interview" ? "active" : "")"

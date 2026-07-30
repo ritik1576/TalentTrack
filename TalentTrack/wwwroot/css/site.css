@@ -861,3 +861,60 @@ body {
     font-weight: 700;
     letter-spacing: 0.05em;
 }
+
+/* ==========================================================================
+   Phase 2: Skill Picker & Screening Components
+   ========================================================================== */
+.tt-skill-tag {
+    background: var(--tt-card-bg);
+    border: 1px solid var(--tt-border) !important;
+    transition: all 0.2s ease;
+}
+
+.tt-skill-tag:hover {
+    border-color: var(--tt-primary) !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.tt-skill-tag .form-control-sm {
+    border-radius: 8px;
+    border: 1px solid var(--tt-border);
+    text-align: center;
+    font-weight: 600;
+}
+
+.tt-skill-tag .form-control-sm:focus {
+    border-color: var(--tt-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Screening skill evaluation row */
+.tt-screening-row {
+    transition: all 0.2s ease;
+}
+
+.tt-screening-row.checked {
+    border-color: var(--tt-success) !important;
+    background: rgba(16, 185, 129, 0.04);
+}
+
+/* Alert notification styling */
+.alert {
+    border: none;
+    font-size: 0.925rem;
+}
+
+.alert-warning {
+    background: var(--tt-warning-light);
+    color: #92400E;
+}
+
+.alert-success {
+    background: var(--tt-success-light);
+    color: #065F46;
+}
+
+.alert-danger {
+    background: var(--tt-danger-light);
+    color: #991B1B;
+}

@@ -14,10 +14,17 @@
                 <form asp-action="Edit" method="post" enctype="multipart/form-data">
                     <input type="hidden" asp-for="CandidateId" />
 
-                    <div class="mb-3">
-                        <label asp-for="Name" class="form-label fw-medium">Full Name <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control" placeholder="e.g. Rahul Sharma" required />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label fw-medium">First Name <span class="text-danger">*</span></label>
+                            <input asp-for="FirstName" class="form-control" placeholder="e.g. Rahul" required />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label fw-medium">Last Name <span class="text-danger">*</span></label>
+                            <input asp-for="LastName" class="form-control" placeholder="e.g. Sharma" required />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -33,36 +40,119 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Skills" class="form-label fw-medium">Key Skills</label>
-                        <input asp-for="Skills" class="form-control" placeholder="e.g. C#, ASP.NET Core, SQL, React" />
-                        <span asp-validation-for="Skills" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Experience" class="form-label fw-medium">Experience (Years)</label>
+                        <label asp-for="Experience" class="form-label fw-medium">Overall Experience (Years)</label>
                         <input asp-for="Experience" type="number" min="0" max="50" class="form-control" placeholder="e.g. 3" />
                         <span asp-validation-for="Experience" class="text-danger small"></span>
                     </div>
 
+                    <!-- Per-Skill Experience Section -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium"><i class="bi bi-gear-fill text-primary me-1"></i> Skills & Experience</label>
+                        <small class="text-muted d-block mb-2">Select skills and specify years of experience for each.</small>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <select id="skillDropdown" class="form-select" style="max-width: 280px;">
+                                <option value="">-- Select a skill --</option>
+                                @foreach (var skill in TalentTrack.Models.DTOs.JobCreateViewModel.AvailableSkills)
+                                {
+                                    <option value="@skill">@skill</option>
+                                }
+                            </select>
+                            <button type="button" class="btn btn-outline-primary px-3" id="addSkillBtn">
+                                <i class="bi bi-plus-lg me-1"></i> Add
+                            </button>
+                        </div>
+
+                        <div id="skillContainer">
+                            <!-- Skill entries rendered here by JS -->
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="skillNames" id="hiddenSkillNames" />
+                    <input type="hidden" name="skillExperiences" id="hiddenSkillExperiences" />
+
                     <div class="mb-4">
-                        <label class="form-label fw-medium"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>Update Resume PDF</label>
-                        @if (!string.IsNullOrEmpty(Model.Resume) && Model.Resume.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <div class="mb-2">
-                                <a href="@Model.Resume" target="_blank" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-file-pdf-fill me-1"></i> View Uploaded PDF Resume
-                                </a>
-                            </div>
-                        }
+                        <label class="form-label fw-medium"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>Upload Resume PDF</label>
                         <input type="file" name="resumeFile" accept=".pdf" class="form-control" />
+                        @if (!string.IsNullOrEmpty(Model.Resume) && Model.Resume.StartsWith("/uploads/"))
+                        {
+                            <small class="text-muted d-block mt-1">Current: <a href="@Model.Resume" target="_blank" class="text-primary"><i class="bi bi-file-earmark-pdf-fill me-1 text-danger"></i>View uploaded PDF</a></small>
+                        }
+                        else
+                        {
+                            <small class="text-muted d-block mt-1">No resume uploaded yet.</small>
+                        }
                     </div>
 
                     <div class="d-flex justify-content-between">
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i>Update Candidate</button>
+                        <button type="submit" class="btn btn-primary px-4" id="submitBtn"><i class="bi bi-check-lg me-1"></i>Update Candidate</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const skillContainer = document.getElementById('skillContainer');
+        const skillDropdown = document.getElementById('skillDropdown');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+
+        addSkillBtn.addEventListener('click', function () {
+            const skillName = skillDropdown.value;
+            if (!skillName) return;
+            if (document.querySelector(`[data-skill-name="${skillName}"]`)) {
+                alert('This skill has already been added.');
+                return;
+            }
+            addSkillRow(skillName, 0);
+            skillDropdown.value = '';
+        });
+
+        function addSkillRow(skillName, experience) {
+            const row = document.createElement('div');
+            row.className = 'tt-skill-tag d-flex align-items-center gap-3 mb-2 p-3 rounded-3 border';
+            row.setAttribute('data-skill-name', skillName);
+            row.innerHTML = `
+                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span class="fw-medium">${skillName}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="number" class="form-control form-control-sm skill-exp-input" style="width: 80px;"
+                           min="0" max="30" value="${experience}" placeholder="Yrs" data-skill="${skillName}" />
+                    <span class="text-muted small">Years</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.tt-skill-tag').remove()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+            skillContainer.appendChild(row);
+        }
+
+        // Pre-populate existing candidate skills
+        @if (Model.CandidateSkills != null && Model.CandidateSkills.Any())
+        {
+            @foreach (var cs in Model.CandidateSkills)
+            {
+                <text>addSkillRow('@cs.SkillName', @cs.ExperienceYears);</text>
+            }
+        }
+
+        // Before form submit, serialize skill data
+        document.getElementById('submitBtn').closest('form').addEventListener('submit', function () {
+            const rows = document.querySelectorAll('.tt-skill-tag');
+            const names = [];
+            const exps = [];
+            rows.forEach(row => {
+                names.push(row.getAttribute('data-skill-name'));
+                const expInput = row.querySelector('.skill-exp-input');
+                exps.push(expInput ? expInput.value : '0');
+            });
+            document.getElementById('hiddenSkillNames').value = names.join(',');
+            document.getElementById('hiddenSkillExperiences').value = exps.join(',');
+        });
+    </script>
+}

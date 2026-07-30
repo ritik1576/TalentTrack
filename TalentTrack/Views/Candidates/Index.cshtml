@@ -9,9 +9,14 @@
         <h2 class="fw-bold mb-1">Candidate Directory</h2>
         <p class="text-muted mb-0">View, manage, and inspect candidates and uploaded PDF resumes.</p>
     </div>
-    <a asp-action="Create" class="btn btn-primary px-3">
-        <i class="bi bi-person-plus-fill me-1"></i> Add Candidate
-    </a>
+    <div class="d-flex gap-2">
+        <a asp-action="Apply" class="btn btn-outline-primary px-3">
+            <i class="bi bi-send-fill me-1"></i> Apply for Job
+        </a>
+        <a asp-action="Create" class="btn btn-primary px-3">
+            <i class="bi bi-person-plus-fill me-1"></i> Add Candidate
+        </a>
+    </div>
 </div>
 
 <div class="card shadow-sm border-0 rounded-4">
@@ -71,11 +76,14 @@
                                     }
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <a asp-action="Edit" asp-route-id="@candidate.CandidateId" class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="bi bi-pencil"></i> Edit
+                                    <a asp-action="Profile" asp-route-id="@candidate.CandidateId" class="btn btn-sm btn-outline-info me-1" title="View">
+                                        <i class="bi bi-eye"></i>
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@candidate.CandidateId" onclick="return confirm('Are you sure you want to delete this candidate?');" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i> Delete
+                                    <a asp-action="Edit" asp-route-id="@candidate.CandidateId" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@candidate.CandidateId" onclick="return confirm('Are you sure you want to delete this candidate?');" class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
                                     </a>
                                 </td>
                             </tr>

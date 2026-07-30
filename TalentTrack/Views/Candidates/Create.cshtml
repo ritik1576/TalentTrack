@@ -6,16 +6,103 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
+        
+        <!-- Duplicate Warning Section -->
+        <div id="duplicateWarningSection" class="card border-warning border-2 rounded-4 shadow-sm mb-4" style="display:none; background-color: #FFFDF5;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-3"></i>
+                    <div>
+                        <h5 class="alert-heading fw-bold mb-1 text-dark">Warning: This candidate has already applied.</h5>
+                        <p class="mb-0 text-muted small">An existing candidate profile matches the entered email or phone number.</p>
+                    </div>
+                </div>
+                <div class="row g-3 bg-white bg-opacity-75 p-3 rounded-3 mb-3 border">
+                    <div class="col-md-4">
+                        <span class="text-muted d-block small">Candidate Name</span>
+                        <strong id="dupName" class="text-dark"></strong>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="text-muted d-block small">Email Address</span>
+                        <strong id="dupEmail" class="text-dark"></strong>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="text-muted d-block small">Mobile Number</span>
+                        <strong id="dupPhone" class="text-dark"></strong>
+                    </div>
+                </div>
+
+                <!-- Toggle Previous Applications Section -->
+                <div class="mb-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" id="togglePrevAppsBtn">
+                        <i class="bi bi-eye"></i> View Previous Applications (<span id="prevAppsCount">0</span>)
+                    </button>
+                    <div id="prevApplicationsWrapper" class="mt-2 border rounded-3 p-3 bg-white shadow-sm" style="display:none;">
+                        <h6 class="fw-bold mb-2 text-primary small"><i class="bi bi-journal-list me-1"></i>Application History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="small text-muted">Job Position</th>
+                                        <th class="small text-muted">Applied Date</th>
+                                        <th class="small text-muted text-end">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prevApplicationsBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a id="viewProfileBtn" href="#" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-person-bounding-box me-1"></i> View Existing Candidate Profile
+                    </a>
+                    <button type="button" id="continueBtn" class="btn btn-sm btn-success">
+                        <i class="bi bi-check-circle me-1"></i> Continue with Current Job Application
+                    </button>
+                    <button type="button" id="cancelDupBtn" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-x-circle me-1"></i> Cancel Duplicate Application
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-primary text-white p-3">
                 <h5 class="mb-0 fw-bold"><i class="bi bi-person-plus me-2"></i>Add New Candidate</h5>
             </div>
             <div class="card-body p-4">
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <form asp-action="Create" method="post" enctype="multipart/form-data" id="candidateForm">
+                    <input type="hidden" name="useExistingCandidateId" id="useExistingCandidateId" value="" />
+
+                    <!-- Job Selection -->
                     <div class="mb-3">
-                        <label asp-for="Name" class="form-label fw-medium">Full Name <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control" placeholder="e.g. Rahul Sharma" required />
-                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <label class="form-label fw-medium">Job Position Applying For <span class="text-danger">*</span></label>
+                        <select name="jobId" id="jobId" class="form-select" required>
+                            <option value="">-- Select Job --</option>
+                            @if (ViewBag.Jobs != null)
+                            {
+                                @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Jobs)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label fw-medium">First Name <span class="text-danger">*</span></label>
+                            <input asp-for="FirstName" class="form-control" placeholder="e.g. Rahul" required />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label fw-medium">Last Name <span class="text-danger">*</span></label>
+                            <input asp-for="LastName" class="form-control" placeholder="e.g. Sharma" required />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -25,22 +112,42 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Phone" class="form-label fw-medium">Contact No</label>
-                        <input asp-for="Phone" class="form-control" placeholder="e.g. 9876543210" type="tel" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+                        <label asp-for="Phone" class="form-label fw-medium">Contact No <span class="text-danger">*</span></label>
+                        <input asp-for="Phone" class="form-control" placeholder="e.g. 9876543210" type="tel" maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required />
                         <span asp-validation-for="Phone" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Skills" class="form-label fw-medium">Key Skills</label>
-                        <input asp-for="Skills" class="form-control" placeholder="e.g. C#, ASP.NET Core, SQL, React" />
-                        <span asp-validation-for="Skills" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Experience" class="form-label fw-medium">Experience (Years)</label>
+                        <label asp-for="Experience" class="form-label fw-medium">Overall Experience (Years)</label>
                         <input asp-for="Experience" type="number" min="0" max="50" class="form-control" placeholder="e.g. 3" />
                         <span asp-validation-for="Experience" class="text-danger small"></span>
                     </div>
+
+                    <!-- Per-Skill Experience Section -->
+                    <div class="mb-3">
+                        <label class="form-label fw-medium"><i class="bi bi-gear-fill text-primary me-1"></i> Skills & Experience</label>
+                        <small class="text-muted d-block mb-2">Select skills and specify years of experience for each.</small>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <select id="skillDropdown" class="form-select" style="max-width: 280px;">
+                                <option value="">-- Select a skill --</option>
+                                @foreach (var skill in TalentTrack.Models.DTOs.JobCreateViewModel.AvailableSkills)
+                                {
+                                    <option value="@skill">@skill</option>
+                                }
+                            </select>
+                            <button type="button" class="btn btn-outline-primary px-3" id="addSkillBtn">
+                                <i class="bi bi-plus-lg me-1"></i> Add
+                            </button>
+                        </div>
+
+                        <div id="skillContainer">
+                            <!-- Skill entries rendered here by JS -->
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="skillNames" id="hiddenSkillNames" />
+                    <input type="hidden" name="skillExperiences" id="hiddenSkillExperiences" />
 
                     <div class="mb-4">
                         <label class="form-label fw-medium"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>Upload Resume PDF</label>
@@ -50,10 +157,197 @@
 
                     <div class="d-flex justify-content-between">
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i>Save Candidate</button>
+                        <button type="submit" class="btn btn-primary px-4" id="submitBtn"><i class="bi bi-check-lg me-1"></i>Save Candidate</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const skillContainer = document.getElementById('skillContainer');
+        const skillDropdown = document.getElementById('skillDropdown');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+
+        addSkillBtn.addEventListener('click', function () {
+            const skillName = skillDropdown.value;
+            if (!skillName) return;
+            if (document.querySelector(`[data-skill-name="${skillName}"]`)) {
+                alert('This skill has already been added.');
+                return;
+            }
+            addSkillRow(skillName, 0);
+            skillDropdown.value = '';
+        });
+
+        function addSkillRow(skillName, experience) {
+            const row = document.createElement('div');
+            row.className = 'tt-skill-tag d-flex align-items-center gap-3 mb-2 p-3 rounded-3 border';
+            row.setAttribute('data-skill-name', skillName);
+            row.innerHTML = `
+                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span class="fw-medium">${skillName}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="number" class="form-control form-control-sm skill-exp-input" style="width: 80px;"
+                           min="0" max="30" value="${experience}" placeholder="Yrs" data-skill="${skillName}" />
+                    <span class="text-muted small">Years</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.tt-skill-tag').remove()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+            skillContainer.appendChild(row);
+        }
+
+        // Duplicate Detection Script
+        const emailInput = document.getElementById('Email');
+        const phoneInput = document.getElementById('Phone');
+        const jobSelect = document.getElementById('jobId');
+        const duplicateWarningSection = document.getElementById('duplicateWarningSection');
+        const useExistingCandidateIdInput = document.getElementById('useExistingCandidateId');
+        const submitBtn = document.getElementById('submitBtn');
+
+        async function performDuplicateCheck() {
+            const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const jobId = jobSelect.value;
+
+            if (!email && !phone) {
+                hideDuplicateWarning();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Candidates/CheckDuplicate?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&jobId=${jobId}`);
+                const data = await response.json();
+
+                if (data.isDuplicate) {
+                    showDuplicateWarning(data);
+                } else {
+                    hideDuplicateWarning();
+                }
+            } catch (err) {
+                console.error("Error checking duplicates:", err);
+            }
+        }
+
+        function showDuplicateWarning(data) {
+            duplicateWarningSection.style.display = 'block';
+            document.getElementById('dupName').innerText = data.name || 'N/A';
+            document.getElementById('dupEmail').innerText = data.email || 'N/A';
+            document.getElementById('dupPhone').innerText = data.phone || 'N/A';
+            document.getElementById('viewProfileBtn').href = `/Candidates/Profile/${data.candidateId}`;
+            
+            // Populate applications
+            const tbody = document.getElementById('prevApplicationsBody');
+            tbody.innerHTML = '';
+            document.getElementById('prevAppsCount').innerText = data.previousApplications.length;
+
+            if (data.previousApplications && data.previousApplications.length > 0) {
+                data.previousApplications.forEach(app => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="small fw-medium">${app.jobTitle}</td>
+                        <td class="small text-muted">${app.appliedDate}</td>
+                        <td class="small text-end"><span class="badge bg-secondary">${app.status}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted small py-2">No previous applications found.</td></tr>';
+            }
+
+            // Disable main save button until recruiter clicks "Continue"
+            if (!useExistingCandidateIdInput.value) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('disabled');
+            }
+        }
+
+        function hideDuplicateWarning() {
+            duplicateWarningSection.style.display = 'none';
+            useExistingCandidateIdInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled');
+        }
+
+        // Event listeners
+        emailInput.addEventListener('change', performDuplicateCheck);
+        phoneInput.addEventListener('change', performDuplicateCheck);
+        jobSelect.addEventListener('change', performDuplicateCheck);
+
+        // Continue button logic
+        document.getElementById('continueBtn').addEventListener('click', function() {
+            const profileHref = document.getElementById('viewProfileBtn').getAttribute('href');
+            const match = profileHref.match(/\/Candidates\/Profile\/(\d+)/);
+            if (match && match[1]) {
+                useExistingCandidateIdInput.value = match[1];
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('disabled');
+                submitBtn.click();
+            }
+        });
+
+        // Cancel button logic
+        document.getElementById('cancelDupBtn').addEventListener('click', function() {
+            window.location.href = '/Candidates/Index';
+        });
+
+        // Toggle previous applications view
+        document.getElementById('togglePrevAppsBtn').addEventListener('click', function() {
+            const wrapper = document.getElementById('prevApplicationsWrapper');
+            if (wrapper.style.display === 'none') {
+                wrapper.style.display = 'block';
+                this.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Previous Applications';
+            } else {
+                wrapper.style.display = 'none';
+                this.innerHTML = `<i class="bi bi-eye"></i> View Previous Applications (${document.getElementById('prevAppsCount').innerText})`;
+            }
+        });
+
+        // Before form submit, serialize skill data and verify duplicates
+        document.getElementById('candidateForm').addEventListener('submit', async function (e) {
+            const rows = document.querySelectorAll('.tt-skill-tag');
+            const names = [];
+            const exps = [];
+            rows.forEach(row => {
+                names.push(row.getAttribute('data-skill-name'));
+                const expInput = row.querySelector('.skill-exp-input');
+                exps.push(expInput ? expInput.value : '0');
+            });
+            document.getElementById('hiddenSkillNames').value = names.join(',');
+            document.getElementById('hiddenSkillExperiences').value = exps.join(',');
+
+            // If recruiter chose to continue with existing profile, allow submission
+            if (useExistingCandidateIdInput.value) {
+                return;
+            }
+
+            const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const jobId = jobSelect.value;
+
+            if (email || phone) {
+                e.preventDefault();
+                try {
+                    const response = await fetch(`/Candidates/CheckDuplicate?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&jobId=${jobId}`);
+                    const data = await response.json();
+                    if (data.isDuplicate) {
+                        showDuplicateWarning(data);
+                        alert("Warning: This candidate has already applied. Please review options.");
+                    } else {
+                        useExistingCandidateIdInput.value = '';
+                        this.submit();
+                    }
+                } catch (err) {
+                    console.error("Error checking duplicates before submission:", err);
+                    this.submit();
+                }
+            }
+        });
+    </script>
+}
