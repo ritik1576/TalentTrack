@@ -1,0 +1,196 @@
+@model TalentTrack.Models.DTOs.CandidateProfileViewModel
+
+@{
+    ViewData["Title"] = "Candidate Profile";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Candidate Profile</h2>
+        <p class="text-muted mb-0">Complete profile information for this candidate</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Candidate.CandidateId" class="btn btn-outline-primary px-3">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+    </div>
+</div>
+
+<!-- Profile Hero Banner -->
+<div class="tt-profile-hero mb-4">
+    <div class="d-flex align-items-center gap-4">
+        <div class="tt-profile-avatar">
+            @(string.IsNullOrEmpty(Model.Candidate.Name) ? "?" : Model.Candidate.Name.Substring(0, 1).ToUpper())@(Model.Candidate.Name?.Length >= 2 ? Model.Candidate.Name.Substring(1, 1).ToUpper() : "")
+        </div>
+        <div>
+            <h3 class="fw-bold mb-1">@(Model.Candidate.Name ?? "N/A")</h3>
+            <div class="d-flex gap-3 opacity-90">
+                <span><i class="bi bi-envelope me-1"></i>@(Model.Candidate.Email ?? "N/A")</span>
+                <span><i class="bi bi-phone me-1"></i>@(Model.Candidate.Phone ?? "N/A")</span>
+            </div>
+            @if (Model.Candidate.Experience.HasValue)
+            {
+                <span class="badge bg-light text-dark mt-2 px-3 py-1">
+                    <i class="bi bi-briefcase me-1"></i>@Model.Candidate.Experience Years Experience
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Personal Details Card -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    <i class="bi bi-person-fill text-primary me-1"></i> Personal Details
+                </h6>
+                <div class="mb-3">
+                    <div class="text-muted small">Full Name</div>
+                    <div class="fw-medium">@(Model.Candidate.Name ?? "N/A")</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Email Address</div>
+                    <div class="fw-medium">@(Model.Candidate.Email ?? "N/A")</div>
+                </div>
+                <div class="mb-3">
+                    <div class="text-muted small">Contact No</div>
+                    <div class="fw-medium">@(Model.Candidate.Phone ?? "N/A")</div>
+                </div>
+                <div>
+                    <div class="text-muted small">Resume</div>
+                    @if (!string.IsNullOrEmpty(Model.Candidate.Resume) && Model.Candidate.Resume.StartsWith("/uploads/"))
+                    {
+                        <a href="@Model.Candidate.Resume" target="_blank" class="btn btn-sm btn-outline-danger mt-1">
+                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> View PDF
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Not Uploaded</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Card -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-body p-0">
+                <div class="px-4 pt-4 pb-2">
+                    <h6 class="fw-bold text-uppercase text-muted mb-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                        <i class="bi bi-gear-fill text-primary me-1"></i> Skills & Experience
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Skill</th>
+                                <th>Experience</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Skills.Any())
+                            {
+                                @foreach (var skill in Model.Skills)
+                                {
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="tt-icon-bubble tt-icon-primary" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                    <i class="bi bi-code-slash"></i>
+                                                </div>
+                                                <span class="fw-medium">@skill.SkillName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                                @skill.ExperienceYears @(skill.ExperienceYears == 1 ? "Year" : "Years")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center py-4 text-muted">
+                                        <i class="bi bi-gear display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                        <span>No skills recorded.</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applied Jobs Card -->
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="px-4 pt-4 pb-2">
+            <h6 class="fw-bold text-uppercase text-muted mb-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                <i class="bi bi-briefcase-fill text-primary me-1"></i> Applied Jobs
+            </h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Job Title</th>
+                        <th>Applied Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Applications.Any())
+                    {
+                        @foreach (var app in Model.Applications)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-medium">@(app.Job?.JobTitle ?? "N/A")</td>
+                                <td>@app.AppliedDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (app.Status == "Applied")
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">@app.Status</span>
+                                    }
+                                    else if (app.Status == "Screened")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">@app.Status</span>
+                                    }
+                                    else if (app.Status == "Rejected")
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">@app.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">@app.Status</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">
+                                <i class="bi bi-briefcase display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                <span>No job applications yet.</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

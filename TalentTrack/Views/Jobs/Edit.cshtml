@@ -1,50 +1,53 @@
-@model TalentTrack.Models.Job
+@model TalentTrack.Models.DTOs.JobCreateViewModel
 
 @{
     ViewData["Title"] = "Edit Job";
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm border-0 rounded-3">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Edit Job Opening</h2>
+                <p class="text-muted mb-0">Update job details and required skills</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-primary text-white p-3">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Job Opening</h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Job</h5>
             </div>
             <div class="card-body p-4">
-                <form asp-action="Edit" method="post">
+                <form asp-action="Edit" method="post" id="jobForm">
                     <input type="hidden" asp-for="JobId" />
 
                     <div class="mb-3">
-                        <label asp-for="JobTitle" class="form-label fw-medium">Job Title</label>
+                        <label asp-for="JobTitle" class="form-label fw-medium">Job Title <span class="text-danger">*</span></label>
                         <input asp-for="JobTitle" class="form-control" placeholder="e.g. Senior Software Engineer" required />
                         <span asp-validation-for="JobTitle" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Skills" class="form-label fw-medium">Skills Required</label>
-                        <input asp-for="Skills" class="form-control" placeholder="e.g. C#, ASP.NET Core, SQL" required />
-                        <span asp-validation-for="Skills" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Location" class="form-label fw-medium">Location</label>
-                        <input asp-for="Location" class="form-control" placeholder="e.g. Remote / Mumbai" required />
-                        <span asp-validation-for="Location" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Experience" class="form-label fw-medium">Experience Required</label>
-                        <input asp-for="Experience" class="form-control" placeholder="e.g. 3-5 Years" required />
-                        <span asp-validation-for="Experience" class="text-danger small"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Description" class="form-label fw-medium">Job Description</label>
+                        <label asp-for="Description" class="form-label fw-medium">Job Description <span class="text-danger">*</span></label>
                         <textarea asp-for="Description" class="form-control" rows="4" placeholder="Brief job description..." required></textarea>
                         <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Location" class="form-label fw-medium">Location <span class="text-danger">*</span></label>
+                            <input asp-for="Location" class="form-control" placeholder="e.g. Remote / Mumbai" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Experience" class="form-label fw-medium">Overall Experience</label>
+                            <input asp-for="Experience" class="form-control" placeholder="e.g. 3-5 Years" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label asp-for="Status" class="form-label fw-medium">Status</label>
                         <select asp-for="Status" class="form-select">
                             <option value="Active">Active</option>
@@ -52,15 +55,88 @@
                             <option value="Hiring">Hiring</option>
                             <option value="Closed">Closed</option>
                         </select>
-                        <span asp-validation-for="Status" class="text-danger small"></span>
                     </div>
+
+                    <!-- Required Skills Section -->
+                    <div class="mb-4">
+                        <label class="form-label fw-medium"><i class="bi bi-gear-fill text-primary me-1"></i> Required Skills & Experience</label>
+                        <small class="text-muted d-block mb-2">Select skills and specify required years of experience for each.</small>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <input type="text" id="skillInput" class="form-control" placeholder="Type a skill (e.g. Java)" style="max-width: 280px;" />
+                            <button type="button" class="btn btn-outline-primary px-3" id="addSkillBtn">
+                                <i class="bi bi-plus-lg me-1"></i> Add
+                            </button>
+                        </div>
+
+                        <div id="skillContainer">
+                            <!-- Skill entries rendered here by JS -->
+                        </div>
+                    </div>
+
+                    <input type="hidden" asp-for="Skills" id="hiddenSkills" />
 
                     <div class="d-flex justify-content-between">
                         <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4">Update Job</button>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i>Update Job</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const skillContainer = document.getElementById('skillContainer');
+        const skillInput = document.getElementById('skillInput');
+        const addSkillBtn = document.getElementById('addSkillBtn');
+        let skillIndex = 0;
+
+        addSkillBtn.addEventListener('click', function () {
+            const skillName = skillInput.value.trim();
+            if (!skillName) return;
+
+            if (document.querySelector(`[data-skill-name="${skillName}"]`)) {
+                alert('This skill has already been added.');
+                return;
+            }
+
+            addSkillRow(skillName, 0);
+            skillInput.value = '';
+        });
+
+        function addSkillRow(skillName, experience) {
+            const idx = skillIndex++;
+            const row = document.createElement('div');
+            row.className = 'tt-skill-tag d-flex align-items-center gap-3 mb-2 p-3 rounded-3 border';
+            row.setAttribute('data-skill-name', skillName);
+            row.innerHTML = `
+                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <span class="fw-medium">${skillName}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="number" name="SkillEntries[${idx}].RequiredExperience"
+                           class="form-control form-control-sm" style="width: 80px;"
+                           min="0" max="30" value="${experience}" placeholder="Yrs" />
+                    <span class="text-muted small">Years</span>
+                </div>
+                <input type="hidden" name="SkillEntries[${idx}].SkillName" value="${skillName}" />
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.tt-skill-tag').remove()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+            skillContainer.appendChild(row);
+        }
+
+        // Pre-populate existing skills
+        @if (Model.SkillEntries != null && Model.SkillEntries.Any())
+        {
+            @foreach (var entry in Model.SkillEntries)
+            {
+                <text>addSkillRow('@entry.SkillName', @entry.RequiredExperience);</text>
+            }
+        }
+    </script>
+}

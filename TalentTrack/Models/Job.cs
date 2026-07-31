@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace TalentTrack.Models
 {
@@ -18,5 +18,8 @@ namespace TalentTrack.Models
         public string Location { get; set; }
 
         public string Status { get; set; }
+
+        // Phase 2: Navigation for per-skill experience requirements
+        public virtual ICollection<JobSkill> JobSkills { get; set; } = new List<JobSkill>();
     }
 }

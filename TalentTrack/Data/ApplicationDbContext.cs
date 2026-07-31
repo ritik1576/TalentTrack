@@ -18,6 +18,13 @@ namespace TalentTrack.Data
         public DbSet<UserAccount> UserAccounts { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // Phase 2: Screening Workflow
+        public DbSet<JobSkill> JobSkills { get; set; }
+        public DbSet<CandidateSkill> CandidateSkills { get; set; }
+        public DbSet<CandidateApplication> CandidateApplications { get; set; }
+        public DbSet<Screening> Screenings { get; set; }
+        public DbSet<ScreeningSkillEvaluation> ScreeningSkillEvaluations { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -84,7 +91,8 @@ namespace TalentTrack.Data
                 }
             );
 
-            // Relationships
+            // ===== Phase 1 Relationships =====
+
             modelBuilder.Entity<Interview>()
                 .HasOne(i => i.Candidate)
                 .WithMany()
@@ -120,6 +128,54 @@ namespace TalentTrack.Data
                 .WithMany(iv => iv.Feedbacks)
                 .HasForeignKey(f => f.InterviewerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ===== Phase 2 Relationships =====
+
+            // JobSkill → Job
+            modelBuilder.Entity<JobSkill>()
+                .HasOne(js => js.Job)
+                .WithMany(j => j.JobSkills)
+                .HasForeignKey(js => js.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CandidateSkill → Candidate
+            modelBuilder.Entity<CandidateSkill>()
+                .HasOne(cs => cs.Candidate)
+                .WithMany(c => c.CandidateSkills)
+                .HasForeignKey(cs => cs.CandidateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CandidateApplication → Candidate & Job
+            modelBuilder.Entity<CandidateApplication>()
+                .HasOne(ca => ca.Candidate)
+                .WithMany(c => c.Applications)
+                .HasForeignKey(ca => ca.CandidateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CandidateApplication>()
+                .HasOne(ca => ca.Job)
+                .WithMany()
+                .HasForeignKey(ca => ca.JobId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Unique constraint: one application per candidate per job
+            modelBuilder.Entity<CandidateApplication>()
+                .HasIndex(ca => new { ca.CandidateId, ca.JobId })
+                .IsUnique();
+
+            // Screening → CandidateApplication
+            modelBuilder.Entity<Screening>()
+                .HasOne(s => s.Application)
+                .WithMany()
+                .HasForeignKey(s => s.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ScreeningSkillEvaluation → Screening
+            modelBuilder.Entity<ScreeningSkillEvaluation>()
+                .HasOne(se => se.Screening)
+                .WithMany(s => s.SkillEvaluations)
+                .HasForeignKey(se => se.ScreeningId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

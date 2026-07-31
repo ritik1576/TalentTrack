@@ -37,7 +37,14 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
 
-            ViewBag.Candidates = new SelectList(_context.Candidates, "CandidateId", "Name");
+            var screenedCandidates = _context.CandidateApplications
+                .Where(ca => ca.Status == "Screened")
+                .Include(ca => ca.Candidate)
+                .Select(ca => ca.Candidate)
+                .Distinct()
+                .ToList();
+
+            ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name");
             ViewBag.Jobs = new SelectList(_context.Jobs, "JobId", "JobTitle");
             ViewBag.Interviewers = new SelectList(_context.Interviewers, "InterviewerId", "Name");
             return View();
@@ -83,7 +90,14 @@ namespace TalentTrack.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.Candidates = new SelectList(_context.Candidates, "CandidateId", "Name", interview.CandidateId);
+            var screenedCandidates = _context.CandidateApplications
+                .Where(ca => ca.Status == "Screened")
+                .Include(ca => ca.Candidate)
+                .Select(ca => ca.Candidate)
+                .Distinct()
+                .ToList();
+
+            ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
             ViewBag.Jobs = new SelectList(_context.Jobs, "JobId", "JobTitle", interview.JobId);
             ViewBag.Interviewers = new SelectList(_context.Interviewers, "InterviewerId", "Name", interview.InterviewerId);
             return View(interview);
@@ -101,7 +115,14 @@ namespace TalentTrack.Controllers
                 return NotFound();
             }
 
-            ViewBag.Candidates = new SelectList(_context.Candidates, "CandidateId", "Name", interview.CandidateId);
+            var screenedCandidates = _context.CandidateApplications
+                .Where(ca => ca.Status == "Screened")
+                .Include(ca => ca.Candidate)
+                .Select(ca => ca.Candidate)
+                .Distinct()
+                .ToList();
+
+            ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
             ViewBag.Jobs = new SelectList(_context.Jobs, "JobId", "JobTitle", interview.JobId);
             ViewBag.Interviewers = new SelectList(_context.Interviewers, "InterviewerId", "Name", interview.InterviewerId);
             return View(interview);
@@ -128,7 +149,14 @@ namespace TalentTrack.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.Candidates = new SelectList(_context.Candidates, "CandidateId", "Name", interview.CandidateId);
+            var screenedCandidates = _context.CandidateApplications
+                .Where(ca => ca.Status == "Screened")
+                .Include(ca => ca.Candidate)
+                .Select(ca => ca.Candidate)
+                .Distinct()
+                .ToList();
+
+            ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
             ViewBag.Jobs = new SelectList(_context.Jobs, "JobId", "JobTitle", interview.JobId);
             ViewBag.Interviewers = new SelectList(_context.Interviewers, "InterviewerId", "Name", interview.InterviewerId);
             return View(interview);

@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Apply for Job";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Apply for Job</h2>
+                <p class="text-muted mb-0">Submit a candidate application for an open position</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <div class="fw-medium">@TempData["Warning"]</div>
+            </div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+                <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+                <div class="fw-medium">@TempData["Success"]</div>
+            </div>
+        }
+
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-primary text-white p-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-send-fill me-2"></i>Job Application</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Apply" method="post">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Select Candidate <span class="text-danger">*</span></label>
+                        <select name="candidateId" class="form-select" required>
+                            <option value="">-- Select Candidate --</option>
+                            @if (ViewBag.Candidates != null)
+                            {
+                                @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Candidates)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Select Job <span class="text-danger">*</span></label>
+                        <select name="jobId" class="form-select" required>
+                            <option value="">-- Select Job --</option>
+                            @if (ViewBag.Jobs != null)
+                            {
+                                @foreach (var item in (Microsoft.AspNetCore.Mvc.Rendering.SelectList)ViewBag.Jobs)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send me-1"></i>Submit Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
