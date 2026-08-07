@@ -15,8 +15,9 @@ namespace TalentTrack.Data
         public DbSet<Interview> Interviews { get; set; }
         public DbSet<Interviewer> Interviewers { get; set; }
         public DbSet<InterviewFeedback> InterviewFeedbacks { get; set; }
-        public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<Recruiter> Recruiters { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<InterviewParticipant> InterviewParticipants { get; set; }
 
         // Phase 2: Screening Workflow
         public DbSet<JobSkill> JobSkills { get; set; }
@@ -29,11 +30,11 @@ namespace TalentTrack.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Seed User Accounts
-            modelBuilder.Entity<UserAccount>().HasData(
-                new UserAccount
+            // Seed Recruiters
+            modelBuilder.Entity<Recruiter>().HasData(
+                new Recruiter
                 {
-                    UserAccountId = 1,
+                    RecruiterId = 1,
                     Name = "System Admin",
                     Email = "admin@talenttrack.com",
                     Password = "admin123",
@@ -42,11 +43,12 @@ namespace TalentTrack.Data
                     Department = "Administration",
                     Status = "Approved",
                     IsApproved = true,
-                    CreatedAt = new DateTime(2026, 1, 1)
+                    CreatedAt = new DateTime(2026, 1, 1),
+                    CreatedBy = "System"
                 },
-                new UserAccount
+                new Recruiter
                 {
-                    UserAccountId = 2,
+                    RecruiterId = 2,
                     Name = "Mansi Verma",
                     Email = "recruiter@talenttrack.com",
                     Password = "recruiter123",
@@ -55,11 +57,12 @@ namespace TalentTrack.Data
                     Department = "Human Resources",
                     Status = "Approved",
                     IsApproved = true,
-                    CreatedAt = new DateTime(2026, 1, 1)
+                    CreatedAt = new DateTime(2026, 1, 1),
+                    CreatedBy = "System"
                 },
-                new UserAccount
+                new Recruiter
                 {
-                    UserAccountId = 3,
+                    RecruiterId = 3,
                     Name = "Priya Sharma",
                     Email = "interviewer@talenttrack.com",
                     Password = "interviewer123",
@@ -68,7 +71,8 @@ namespace TalentTrack.Data
                     Department = "Engineering",
                     Status = "Approved",
                     IsApproved = true,
-                    CreatedAt = new DateTime(2026, 1, 1)
+                    CreatedAt = new DateTime(2026, 1, 1),
+                    CreatedBy = "System"
                 }
             );
 
@@ -105,11 +109,24 @@ namespace TalentTrack.Data
                 .HasForeignKey(i => i.JobId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Interview>()
-                .HasOne(i => i.Interviewer)
-                .WithMany(iv => iv.Interviews)
-                .HasForeignKey(i => i.InterviewerId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<InterviewParticipant>()
+                .HasKey(ip => ip.InterviewParticipantId);
+
+            modelBuilder.Entity<InterviewParticipant>()
+                .HasOne(ip => ip.Interview)
+                .WithMany(i => i.Participants)
+                .HasForeignKey(ip => ip.InterviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<InterviewParticipant>()
+                .HasOne(ip => ip.Recruiter)
+                .WithMany(u => u.InterviewParticipants)
+                .HasForeignKey(ip => ip.RecruiterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InterviewParticipant>()
+                .HasIndex(ip => new { ip.InterviewId, ip.RecruiterId })
+                .IsUnique();
 
             modelBuilder.Entity<InterviewFeedback>()
                 .HasOne(f => f.Interview)
@@ -128,6 +145,15 @@ namespace TalentTrack.Data
                 .WithMany(iv => iv.Feedbacks)
                 .HasForeignKey(f => f.InterviewerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Interview>()
+                .HasMany(i => i.Interviewers)
+                .WithMany(iv => iv.Interviews)
+                .UsingEntity<Dictionary<string, object>>(
+                    "InterviewInterviewers",
+                    j => j.HasOne<Interviewer>().WithMany().HasForeignKey("InterviewerId"),
+                    j => j.HasOne<Interview>().WithMany().HasForeignKey("InterviewId")
+                );
 
             // ===== Phase 2 Relationships =====
 

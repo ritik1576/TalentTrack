@@ -10,7 +10,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+    ).UseSnakeCaseNamingConvention());
 
 // Add Session support
 builder.Services.AddSession(options =>

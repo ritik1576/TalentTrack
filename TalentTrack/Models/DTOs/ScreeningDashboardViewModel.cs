@@ -13,5 +13,7 @@ namespace TalentTrack.Models.DTOs
         public DateTime AppliedDate { get; set; }
         public string ApplicationStatus { get; set; } = "";
         public string ScreeningStatus { get; set; } = "Not Started";
+        public bool IsDuplicate { get; set; }
+        public string DuplicateReason { get; set; } = "";
     }
 }

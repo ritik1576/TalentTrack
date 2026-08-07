@@ -54,7 +54,10 @@ namespace TalentTrack.Controllers
                 .Include(i => i.Candidate)
                 .Include(i => i.Job)
                 .Include(i => i.Feedbacks)
-                .Where(i => i.InterviewerId == interviewer.InterviewerId);
+                .Include(i => i.Interviewers)
+                .Include(i => i.Participants)
+                    .ThenInclude(p => p.Recruiter)
+                .Where(i => i.Interviewers.Any(iv => iv.InterviewerId == interviewer.InterviewerId));
 
             var todayInterviews = myInterviewsQuery
                 .Where(i => i.InterviewDate.Date == today)

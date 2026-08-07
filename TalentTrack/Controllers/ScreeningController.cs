@@ -28,20 +28,43 @@ namespace TalentTrack.Controllers
                 .ToList();
 
             var screenings = _context.Screenings.ToList();
+            var candidates = _context.Candidates.ToList();
 
             var vm = new ScreeningDashboardViewModel
             {
-                Applications = applications.Select(a => new ScreeningDashboardItem
-                {
-                    ApplicationId = a.ApplicationId,
-                    CandidateName = a.Candidate?.Name ?? "N/A",
-                    JobTitle = a.Job?.JobTitle ?? "N/A",
-                    AppliedDate = a.AppliedDate,
-                    ApplicationStatus = a.Status,
-                    ScreeningStatus = screenings.Any(s => s.ApplicationId == a.ApplicationId)
-                        ? screenings.Where(s => s.ApplicationId == a.ApplicationId)
-                            .OrderByDescending(s => s.ScreeningDate).First().Status
-                        : "Not Started"
+                Applications = applications.Select(a => {
+                    var duplicateReason = "";
+                    var isDup = false;
+                    if (a.Candidate != null) {
+                        var dupEmail = !string.IsNullOrEmpty(a.Candidate.Email) && 
+                            candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Email.ToLower() == a.Candidate.Email.ToLower());
+                        var dupPhone = !string.IsNullOrEmpty(a.Candidate.Phone) && 
+                            candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Phone == a.Candidate.Phone);
+                        if (dupEmail && dupPhone) {
+                            duplicateReason = "Email & Contact No. already exist";
+                            isDup = true;
+                        } else if (dupEmail) {
+                            duplicateReason = "Email already exists";
+                            isDup = true;
+                        } else if (dupPhone) {
+                            duplicateReason = "Contact No. already exists";
+                            isDup = true;
+                        }
+                    }
+                    return new ScreeningDashboardItem
+                    {
+                        ApplicationId = a.ApplicationId,
+                        CandidateName = a.Candidate?.Name ?? "N/A",
+                        JobTitle = a.Job?.JobTitle ?? "N/A",
+                        AppliedDate = a.AppliedDate,
+                        ApplicationStatus = a.Status,
+                        ScreeningStatus = screenings.Any(s => s.ApplicationId == a.ApplicationId)
+                            ? screenings.Where(s => s.ApplicationId == a.ApplicationId)
+                                .OrderByDescending(s => s.ScreeningDate).First().Status
+                            : "Not Started",
+                        IsDuplicate = isDup,
+                        DuplicateReason = duplicateReason
+                    };
                 }).ToList()
             };
 
@@ -73,23 +96,30 @@ namespace TalentTrack.Controllers
 
             // Check if candidate was screened or interviewed before (duplicate detection)
             var candidateId = application.CandidateId;
-            var hasPreviousScreening = _context.Screenings
+            
+            var previousScreenings = _context.Screenings
                 .Include(s => s.Application)
-                .Any(s => s.Application != null && s.Application.CandidateId == candidateId && s.Status == "Completed");
+                    .ThenInclude(a => a!.Job)
+                .Where(s => s.Application != null && s.Application.CandidateId == candidateId && s.Status == "Completed")
+                .OrderByDescending(s => s.ScreeningDate)
+                .ToList();
 
-            var hasPreviousInterview = _context.Interviews
-                .Any(i => i.CandidateId == candidateId);
+            var previousInterviews = _context.Interviews
+                .Include(i => i.Job)
+                .Where(i => i.CandidateId == candidateId)
+                .OrderByDescending(i => i.InterviewDate)
+                .ToList();
 
-            // Build skill inputs from job's required skills
+            var hasPreviousScreening = previousScreenings.Any() || previousInterviews.Any();
+
+            // Build skill inputs from job's required skills - starts unchecked (HasSkill = false, Experience = 0)
             var skillInputs = application.Job?.JobSkills.Select(js =>
             {
-                var candidateSkill = application.Candidate?.CandidateSkills
-                    .FirstOrDefault(cs => cs.SkillName == js.SkillName);
                 return new ScreeningSkillInput
                 {
                     SkillName = js.SkillName,
-                    HasSkill = candidateSkill != null,
-                    ExperienceYears = candidateSkill?.ExperienceYears ?? 0
+                    HasSkill = false,
+                    ExperienceYears = 0
                 };
             }).ToList() ?? new List<ScreeningSkillInput>();
 
@@ -101,7 +131,9 @@ namespace TalentTrack.Controllers
                 RequiredSkills = application.Job?.JobSkills.ToList() ?? new List<JobSkill>(),
                 CandidateSkills = application.Candidate?.CandidateSkills.ToList() ?? new List<CandidateSkill>(),
                 SkillInputs = skillInputs,
-                HasPreviousScreening = hasPreviousScreening || hasPreviousInterview
+                HasPreviousScreening = hasPreviousScreening,
+                PreviousScreenings = previousScreenings,
+                PreviousInterviews = previousInterviews
             };
 
             return View(vm);
@@ -157,10 +189,21 @@ namespace TalentTrack.Controllers
             }
 
             // Update application status
-            application.Status = "Screened";
+            var candidate = _context.Candidates.Find(application.CandidateId);
+            bool isDup = false;
+            if (candidate != null)
+            {
+                bool dupEmail = !string.IsNullOrEmpty(candidate.Email) && 
+                    _context.Candidates.Any(c => c.CandidateId != candidate.CandidateId && c.Email.ToLower() == candidate.Email.ToLower());
+                bool dupPhone = !string.IsNullOrEmpty(candidate.Phone) && 
+                    _context.Candidates.Any(c => c.CandidateId != candidate.CandidateId && c.Phone == candidate.Phone);
+                isDup = dupEmail || dupPhone;
+            }
+
+            application.Status = isDup ? "Pending" : "Screened";
             _context.SaveChanges();
 
-            TempData["Success"] = "Screening completed successfully!";
+            TempData["Success"] = isDup ? "Screening completed. Duplicate candidate detected, status set to Pending." : "Screening completed successfully!";
             return RedirectToAction("Index");
         }
     }

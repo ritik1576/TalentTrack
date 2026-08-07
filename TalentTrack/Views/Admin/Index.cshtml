@@ -1,7 +1,7 @@
 @{
     ViewData["Title"] = "Admin Control Panel";
-    var pendingUsers = ViewBag.PendingUsers as List<TalentTrack.Models.UserAccount> ?? new List<TalentTrack.Models.UserAccount>();
-    var approvedUsers = ViewBag.ApprovedUsers as List<TalentTrack.Models.UserAccount> ?? new List<TalentTrack.Models.UserAccount>();
+    var pendingUsers = ViewBag.PendingUsers as List<TalentTrack.Models.Recruiter> ?? new List<TalentTrack.Models.Recruiter>();
+    var approvedUsers = ViewBag.ApprovedUsers as List<TalentTrack.Models.Recruiter> ?? new List<TalentTrack.Models.Recruiter>();
 }
 
 <div class="container-fluid">
@@ -113,13 +113,13 @@
                                     <td class="pe-4 text-end">
                                         <div class="d-flex gap-2 justify-content-end">
                                             <form asp-controller="Admin" asp-action="Approve" method="post" class="d-inline">
-                                                <input type="hidden" name="id" value="@user.UserAccountId" />
+                                                <input type="hidden" name="id" value="@user.RecruiterId" />
                                                 <button type="submit" class="btn btn-sm btn-success px-3 fw-bold">
                                                     <i class="bi bi-check-lg me-1"></i> Approve
                                                 </button>
                                             </form>
                                             <form asp-controller="Admin" asp-action="Reject" method="post" class="d-inline">
-                                                <input type="hidden" name="id" value="@user.UserAccountId" />
+                                                <input type="hidden" name="id" value="@user.RecruiterId" />
                                                 <button type="submit" class="btn btn-sm btn-outline-danger px-3" onclick="return confirm('Are you sure you want to REJECT this account?');">
                                                     <i class="bi bi-x-lg me-1"></i> Reject
                                                 </button>

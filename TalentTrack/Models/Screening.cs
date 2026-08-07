@@ -9,7 +9,7 @@ namespace TalentTrack.Models
 
         public int ApplicationId { get; set; }
 
-        public int ScreenedByUserId { get; set; } // UserAccount who performed screening
+        public int ScreenedByUserId { get; set; } // Recruiter who performed screening
 
         public DateTime ScreeningDate { get; set; } = DateTime.Now;
 

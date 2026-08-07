@@ -17,9 +17,68 @@
 <!-- Duplicate Detection Alert -->
 @if (Model.HasPreviousScreening)
 {
-    <div class="alert alert-warning d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
-        <div class="fw-medium">This candidate has already been screened/interviewed previously.</div>
+    <div class="alert alert-warning rounded-3 shadow-sm mb-4 p-4" role="alert">
+        <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-2 text-warning"></i>
+            <h5 class="alert-heading fw-bold mb-0 text-dark">Warning: Candidate Has History</h5>
+        </div>
+        <p class="mb-3 text-muted small">This candidate has been screened or interviewed previously. Here are the details:</p>
+        
+        @if (Model.PreviousScreenings.Any())
+        {
+            <h6 class="fw-bold text-dark small mb-2"><i class="bi bi-file-earmark-check me-1"></i>Previous Screenings:</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered bg-white bg-opacity-50 mb-0">
+                    <thead>
+                        <tr class="bg-light">
+                            <th class="small py-1">Job Position</th>
+                            <th class="small py-1">Screening Date</th>
+                            <th class="small py-1">Status</th>
+                            <th class="small py-1">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ps in Model.PreviousScreenings)
+                        {
+                            <tr>
+                                <td class="small py-1">@(ps.Application?.Job?.JobTitle ?? "N/A")</td>
+                                <td class="small py-1">@ps.ScreeningDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                <td class="small py-1"><span class="badge bg-success bg-opacity-10 text-success">@ps.Status</span></td>
+                                <td class="small py-1">@ps.Notes</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Model.PreviousInterviews.Any())
+        {
+            <h6 class="fw-bold text-dark small mb-2"><i class="bi bi-calendar-event me-1"></i>Previous Interviews:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered bg-white bg-opacity-50 mb-0">
+                    <thead>
+                        <tr class="bg-light">
+                            <th class="small py-1">Job Position</th>
+                            <th class="small py-1">Interview Date</th>
+                            <th class="small py-1">Status</th>
+                            <th class="small py-1">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pi in Model.PreviousInterviews)
+                        {
+                            <tr>
+                                <td class="small py-1">@(pi.Job?.JobTitle ?? "General Panel Interview")</td>
+                                <td class="small py-1">@pi.InterviewDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                <td class="small py-1"><span class="badge bg-info bg-opacity-10 text-info">@pi.Status</span></td>
+                                <td class="small py-1">@pi.Notes</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 }
 
@@ -92,59 +151,83 @@
                         </div>
                     </div>
 
-                    <!-- Skill Evaluation Table -->
+                    <!-- Skill Evaluation Comparison Table -->
                     <div class="mb-4">
                         <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">
-                            Required Skills Evaluation
+                            Skills Comparison & Verification
                         </h6>
 
-                        @if (Model.SkillInputs.Any())
-                        {
-                            @for (int i = 0; i < Model.SkillInputs.Count; i++)
-                            {
-                                var skillInput = Model.SkillInputs[i];
-                                var requiredSkill = Model.RequiredSkills.FirstOrDefault(rs => rs.SkillName == skillInput.SkillName);
-                                var candidateSkill = Model.CandidateSkills.FirstOrDefault(cs => cs.SkillName == skillInput.SkillName);
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">Satisfies?</th>
+                                        <th>Required Job Skill</th>
+                                        <th>Required Yrs</th>
+                                        <th>Candidate claims</th>
+                                        <th style="width: 130px;">Verified Yrs</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.SkillInputs.Any())
+                                    {
+                                        @for (int i = 0; i < Model.SkillInputs.Count; i++)
+                                        {
+                                            var skillInput = Model.SkillInputs[i];
+                                            var requiredSkill = Model.RequiredSkills.FirstOrDefault(rs => rs.SkillName == skillInput.SkillName);
+                                            var candidateSkill = Model.CandidateSkills.FirstOrDefault(cs => cs.SkillName == skillInput.SkillName);
 
-                                <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-3 border" id="skillRow_@i">
-                                    <input type="hidden" name="SkillInputs[@i].SkillName" value="@skillInput.SkillName" />
-
-                                    <div class="form-check" style="min-width: 28px;">
-                                        <input class="form-check-input" type="checkbox" name="SkillInputs[@i].HasSkill"
-                                               value="true" id="skill_@i"
-                                               @(skillInput.HasSkill ? "checked" : "")
-                                               onchange="toggleExpInput(@i)" />
-                                    </div>
-
-                                    <div class="flex-grow-1">
-                                        <div class="fw-medium">@skillInput.SkillName</div>
-                                        <small class="text-muted">
-                                            Required: <span class="fw-bold text-primary">@(requiredSkill?.RequiredExperience ?? 0) Years</span>
-                                            @if (candidateSkill != null)
-                                            {
-                                                <span class="ms-2">| Candidate claims: <span class="fw-bold text-success">@candidateSkill.ExperienceYears Years</span></span>
-                                            }
-                                        </small>
-                                    </div>
-
-                                    <div class="d-flex align-items-center gap-2" id="expContainer_@i">
-                                        <input type="number" name="SkillInputs[@i].ExperienceYears"
-                                               class="form-control form-control-sm" style="width: 80px;"
-                                               min="0" max="30" value="@skillInput.ExperienceYears"
-                                               id="expInput_@i"
-                                               @(!skillInput.HasSkill ? "disabled" : "") />
-                                        <span class="text-muted small">Years</span>
-                                    </div>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="text-center py-4 text-muted">
-                                <i class="bi bi-gear display-6 d-block mb-2 text-secondary opacity-50"></i>
-                                <span>No required skills defined for this job.</span>
-                            </div>
-                        }
+                                            <tr id="skillRow_@i">
+                                                <td>
+                                                    <input type="hidden" name="SkillInputs[@i].SkillName" value="@skillInput.SkillName" />
+                                                    <div class="form-check m-0">
+                                                        <input class="form-check-input" type="checkbox" name="SkillInputs[@i].HasSkill"
+                                                               value="true" id="skill_@i"
+                                                               @(skillInput.HasSkill ? "checked" : "")
+                                                               onchange="toggleExpInput(@i)" />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-dark">@skillInput.SkillName</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary">@(requiredSkill?.RequiredExperience ?? 0) Yrs</span>
+                                                </td>
+                                                <td>
+                                                    @if (candidateSkill != null)
+                                                    {
+                                                        <span class="badge bg-success bg-opacity-10 text-success">@candidateSkill.ExperienceYears Yrs</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary bg-opacity-10 text-secondary">N/A</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-1" id="expContainer_@i">
+                                                        <input type="number" name="SkillInputs[@i].ExperienceYears"
+                                                               class="form-control form-control-sm" style="width: 70px;"
+                                                               min="0" max="30" value="@(candidateSkill?.ExperienceYears ?? 0)"
+                                                               id="expInput_@i"
+                                                               @(!skillInput.HasSkill ? "disabled" : "") />
+                                                        <span class="text-muted small">Yrs</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                <i class="bi bi-gear display-6 d-block mb-2 text-secondary opacity-50"></i>
+                                                <span>No required skills defined for this job.</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <!-- Notes -->
@@ -184,5 +267,12 @@
                 row.style.background = '';
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            @for (int i = 0; i < Model.SkillInputs.Count; i++)
+            {
+                <text>toggleExpInput(@i);</text>
+            }
+        });
     </script>
 }

@@ -4,6 +4,13 @@
     ViewData["Title"] = "Add Candidate";
 }
 
+<div class="mb-3">
+    <a href="javascript:history.back()" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span>Back</span>
+    </a>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         
@@ -126,16 +133,10 @@
                     <!-- Per-Skill Experience Section -->
                     <div class="mb-3">
                         <label class="form-label fw-medium"><i class="bi bi-gear-fill text-primary me-1"></i> Skills & Experience</label>
-                        <small class="text-muted d-block mb-2">Select skills and specify years of experience for each.</small>
+                        <small class="text-muted d-block mb-2">Type a skill name and specify years of experience for each.</small>
 
                         <div class="d-flex gap-2 mb-3">
-                            <select id="skillDropdown" class="form-select" style="max-width: 280px;">
-                                <option value="">-- Select a skill --</option>
-                                @foreach (var skill in TalentTrack.Models.DTOs.JobCreateViewModel.AvailableSkills)
-                                {
-                                    <option value="@skill">@skill</option>
-                                }
-                            </select>
+                            <input type="text" id="skillInput" class="form-control" placeholder="Type a skill (e.g. Java)" style="max-width: 280px;" />
                             <button type="button" class="btn btn-outline-primary px-3" id="addSkillBtn">
                                 <i class="bi bi-plus-lg me-1"></i> Add
                             </button>
@@ -168,18 +169,18 @@
 @section Scripts {
     <script>
         const skillContainer = document.getElementById('skillContainer');
-        const skillDropdown = document.getElementById('skillDropdown');
+        const skillInput = document.getElementById('skillInput');
         const addSkillBtn = document.getElementById('addSkillBtn');
 
         addSkillBtn.addEventListener('click', function () {
-            const skillName = skillDropdown.value;
+            const skillName = skillInput.value.trim();
             if (!skillName) return;
             if (document.querySelector(`[data-skill-name="${skillName}"]`)) {
                 alert('This skill has already been added.');
                 return;
             }
             addSkillRow(skillName, 0);
-            skillDropdown.value = '';
+            skillInput.value = '';
         });
 
         function addSkillRow(skillName, experience) {

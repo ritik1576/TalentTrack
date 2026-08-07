@@ -55,10 +55,14 @@ namespace TalentTrack.Controllers
 
             if (interview == null) return NotFound();
 
-            var existing = _context.InterviewFeedbacks.FirstOrDefault(f => f.InterviewId == interviewId);
+            var idStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(idStr, out var interviewerId))
+                return RedirectToAction("Login", "Account");
+
+            var existing = _context.InterviewFeedbacks.FirstOrDefault(f => f.InterviewId == interviewId && f.InterviewerId == interviewerId);
             if (existing != null)
             {
-                TempData["Info"] = "Feedback already submitted for this interview.";
+                TempData["Info"] = "You have already submitted feedback for this interview.";
                 return RedirectToAction("Dashboard", "Interviewer");
             }
 
@@ -87,12 +91,35 @@ namespace TalentTrack.Controllers
 
             _context.InterviewFeedbacks.Add(feedback);
 
-            // Update interview status to Completed
-            var interview = _context.Interviews.Find(feedback.InterviewId);
+            // Update interview status to Completed only when all assigned technical interviewers have submitted feedback
+            var interview = _context.Interviews
+                .Include(i => i.Participants)
+                    .ThenInclude(p => p.Recruiter)
+                .FirstOrDefault(i => i.InterviewId == feedback.InterviewId);
             if (interview != null)
             {
-                interview.Status = "Completed";
-                _context.Interviews.Update(interview);
+                var assignedInterviewerIds = _context.Interviews
+                    .Include(i => i.Interviewers)
+                    .FirstOrDefault(i => i.InterviewId == feedback.InterviewId)?
+                    .Interviewers.Select(iv => iv.InterviewerId)
+                    .ToList() ?? new List<int>();
+
+                var submittedInterviewerIds = _context.InterviewFeedbacks
+                    .Where(f => f.InterviewId == feedback.InterviewId)
+                    .Select(f => f.InterviewerId)
+                    .ToList();
+
+                if (!submittedInterviewerIds.Contains(interviewerId))
+                {
+                    submittedInterviewerIds.Add(interviewerId);
+                }
+
+                bool allSubmitted = assignedInterviewerIds.All(id => submittedInterviewerIds.Contains(id));
+                if (allSubmitted || !assignedInterviewerIds.Any())
+                {
+                    interview.Status = "Completed";
+                    _context.Interviews.Update(interview);
+                }
             }
 
             // Push notification to Recruiter & Admin

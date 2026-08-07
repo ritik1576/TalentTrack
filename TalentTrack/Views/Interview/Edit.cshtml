@@ -4,6 +4,13 @@
     ViewData["Title"] = "Edit Interview";
 }
 
+<div class="mb-3">
+    <a href="javascript:history.back()" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span>Back</span>
+    </a>
+</div>
+
 <div class="row justify-content-center">
     <div class="col-md-9 col-lg-7">
         <div class="card shadow-sm border-0 rounded-4">
@@ -27,39 +34,49 @@
                             <span asp-validation-for="CandidateId" class="text-danger small"></span>
                         </div>
 
-                        <!-- Job -->
-                        <div class="col-md-6">
-                            <label asp-for="JobId" class="form-label fw-medium">
-                                <i class="bi bi-briefcase me-1 text-primary"></i>Position / Job
+                        <!-- Recruiter -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium mb-2">
+                                <i class="bi bi-people me-1 text-primary"></i>Assign Recruiter
                             </label>
-                            <select asp-for="JobId" class="form-select" asp-items="ViewBag.Jobs" required>
-                            </select>
-                            <span asp-validation-for="JobId" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Interviewer -->
-                        <div class="col-md-6">
-                            <label asp-for="InterviewerId" class="form-label fw-medium">
-                                <i class="bi bi-person-check me-1 text-success"></i>Assign Interviewer
-                            </label>
-                            <select asp-for="InterviewerId" class="form-select" asp-items="ViewBag.Interviewers">
-                                <option value="">-- Select Interviewer --</option>
+                            <select name="SelectedRecruiterId" class="form-select" asp-items="ViewBag.Recruiters" required>
+                                <option value="">-- Select Recruiter --</option>
                             </select>
                         </div>
 
-                        <!-- Mode -->
-                        <div class="col-md-6">
-                            <label asp-for="Mode" class="form-label fw-medium">
-                                <i class="bi bi-camera-video me-1 text-info"></i>Interview Mode
+                        <!-- Technical Interviewers -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium mb-2">
+                                <i class="bi bi-person-check me-1 text-success"></i>Assign Technical Interviewers (Min 1)
                             </label>
-                            <select asp-for="Mode" class="form-select">
-                                <option value="">-- Select Mode --</option>
-                                <option value="Online">Online (Video Call)</option>
-                                <option value="Offline">Offline (In-Person)</option>
-                                <option value="Hybrid">Hybrid</option>
-                                <option value="Phone">Phone Screen</option>
-                            </select>
+                            <div class="border rounded p-3 bg-light" style="max-height: 120px; overflow-y: auto;">
+                                @if (ViewBag.Interviewers != null)
+                                {
+                                    int index = 0;
+                                    foreach (var item in (MultiSelectList)ViewBag.Interviewers)
+                                    {
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="SelectedInterviewers" value="@item.Value" id="interviewer_@index" @(item.Selected ? "checked" : "") />
+                                            <label class="form-check-label fw-semibold text-dark mb-0" for="interviewer_@index">
+                                                @item.Text
+                                            </label>
+                                        </div>
+                                        index++;
+                                    }
+                                }
+                            </div>
                         </div>
+
+                        <!-- Duration -->
+                        <div class="col-md-6">
+                            <label asp-for="Duration" class="form-label fw-medium">
+                                <i class="bi bi-hourglass-split me-1 text-info"></i>Duration (Minutes)
+                            </label>
+                            <input asp-for="Duration" type="number" class="form-control" min="1" required />
+                            <span asp-validation-for="Duration" class="text-danger small"></span>
+                        </div>
+
+                        <input type="hidden" asp-for="Mode" value="Offline" />
 
                         <!-- Date & Time -->
                         <div class="col-md-6">

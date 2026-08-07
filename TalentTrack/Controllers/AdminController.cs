@@ -19,12 +19,12 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Admin") return RedirectToAction("Login", "Account");
 
-            var pendingUsers = _context.UserAccounts
+            var pendingUsers = _context.Recruiters
                 .Where(u => u.Status == "Pending" || !u.IsApproved)
                 .OrderByDescending(u => u.CreatedAt)
                 .ToList();
 
-            var approvedUsers = _context.UserAccounts
+            var approvedUsers = _context.Recruiters
                 .Where(u => u.IsApproved && u.Status == "Approved")
                 .OrderByDescending(u => u.CreatedAt)
                 .ToList();
@@ -44,11 +44,13 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Admin") return RedirectToAction("Login", "Account");
 
-            var user = _context.UserAccounts.Find(id);
+            var user = _context.Recruiters.Find(id);
             if (user != null)
             {
                 user.IsApproved = true;
                 user.Status = "Approved";
+                user.UpdatedAt = DateTime.Now;
+                user.UpdatedBy = HttpContext.Session.GetString("UserName") ?? "Admin";
 
                 // Push notification for the user
                 _context.Notifications.Add(new Notification
@@ -73,11 +75,13 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Admin") return RedirectToAction("Login", "Account");
 
-            var user = _context.UserAccounts.Find(id);
+            var user = _context.Recruiters.Find(id);
             if (user != null)
             {
                 user.IsApproved = false;
                 user.Status = "Rejected";
+                user.UpdatedAt = DateTime.Now;
+                user.UpdatedBy = HttpContext.Session.GetString("UserName") ?? "Admin";
                 _context.SaveChanges();
                 TempData["Info"] = $"Account request for '{user.Name}' has been REJECTED.";
             }
