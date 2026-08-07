@@ -459,16 +459,24 @@ namespace TalentTrack.Controllers
                     _context.ScreeningSkillEvaluations.Add(eval);
                 }
 
-                application.Status = passed ? "Screened" : "Rejected";
-                _context.SaveChanges();
-
-                if (passed)
+                if (IsDuplicateCandidate(candidate))
                 {
-                    TempData["Success"] = "Application submitted and automated screening PASSED!";
+                    application.Status = "Pending";
+                    _context.SaveChanges();
+                    TempData["Warning"] = "Application submitted. Duplicate candidate details detected. Status set to Pending.";
                 }
                 else
                 {
-                    TempData["Warning"] = "Application submitted but automated screening FAILED!";
+                    application.Status = "Screened";
+                    _context.SaveChanges();
+                    if (passed)
+                    {
+                        TempData["Success"] = "Application submitted and automated screening PASSED!";
+                    }
+                    else
+                    {
+                        TempData["Warning"] = "Application submitted. Automated screening completed (some requirements not met).";
+                    }
                 }
             }
             else
@@ -480,16 +488,82 @@ namespace TalentTrack.Controllers
         }
 
         // Delete Candidate
-        public IActionResult Delete(int id)
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
         {
-            var candidate = _context.Candidates.Find(id);
-            if (candidate != null)
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
             {
-                _context.Candidates.Remove(candidate);
-                _context.SaveChanges();
-                TempData["Info"] = "Candidate deleted.";
+                return RedirectToAction("Login", "Account");
             }
-            return RedirectToAction("Index");
+
+            var candidate = await _context.Candidates
+                .Include(c => c.Applications)
+                .Include(c => c.CandidateSkills)
+                .FirstOrDefaultAsync(c => c.CandidateId == id);
+
+            if (candidate == null)
+            {
+                return NotFound();
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // 1. Delete Screenings & ScreeningSkillEvaluations
+                    var appIds = candidate.Applications.Select(a => a.ApplicationId).ToList();
+                    var screenings = await _context.Screenings
+                        .Where(s => appIds.Contains(s.ApplicationId))
+                        .ToListAsync();
+                    var screeningIds = screenings.Select(s => s.ScreeningId).ToList();
+
+                    var evaluations = await _context.ScreeningSkillEvaluations
+                        .Where(e => screeningIds.Contains(e.ScreeningId))
+                        .ToListAsync();
+                    _context.ScreeningSkillEvaluations.RemoveRange(evaluations);
+                    _context.Screenings.RemoveRange(screenings);
+
+                    // 2. Delete Interviews, Feedbacks, Participants
+                    var interviews = await _context.Interviews
+                        .Where(i => i.CandidateId == id)
+                        .ToListAsync();
+                    var interviewIds = interviews.Select(i => i.InterviewId).ToList();
+
+                    var participants = await _context.InterviewParticipants
+                        .Where(p => interviewIds.Contains(p.InterviewId))
+                        .ToListAsync();
+                    _context.InterviewParticipants.RemoveRange(participants);
+
+                    var feedbacks = await _context.InterviewFeedbacks
+                        .Where(f => interviewIds.Contains(f.InterviewId) || f.CandidateId == id)
+                        .ToListAsync();
+                    _context.InterviewFeedbacks.RemoveRange(feedbacks);
+
+                    _context.Interviews.RemoveRange(interviews);
+
+                    // 3. Delete CandidateApplications
+                    _context.CandidateApplications.RemoveRange(candidate.Applications);
+
+                    // 4. Delete CandidateSkills
+                    _context.CandidateSkills.RemoveRange(candidate.CandidateSkills);
+
+                    // 5. Delete Candidate
+                    _context.Candidates.Remove(candidate);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["Success"] = $"Candidate '{candidate.Name}' and all associated records deleted successfully!";
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = $"Error deleting candidate: {ex.Message}";
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // Helper: Save candidate skills from form data
@@ -597,7 +671,14 @@ namespace TalentTrack.Controllers
                     _context.ScreeningSkillEvaluations.Add(eval);
                 }
 
-                app.Status = passed ? "Screened" : "Rejected";
+                if (IsDuplicateCandidate(candidate))
+                {
+                    app.Status = "Pending";
+                }
+                else
+                {
+                    app.Status = "Screened";
+                }
                 _context.SaveChanges();
             }
         }
@@ -657,8 +738,25 @@ namespace TalentTrack.Controllers
                 _context.ScreeningSkillEvaluations.Add(eval);
             }
 
-            app.Status = passed ? "Screened" : "Rejected";
+            if (IsDuplicateCandidate(candidate))
+            {
+                app.Status = "Pending";
+            }
+            else
+            {
+                app.Status = "Screened";
+            }
             _context.SaveChanges();
+        }
+
+        private bool IsDuplicateCandidate(Candidate candidate)
+        {
+            if (candidate == null) return false;
+            bool dupEmail = !string.IsNullOrEmpty(candidate.Email) && 
+                _context.Candidates.Any(c => c.CandidateId != candidate.CandidateId && c.Email.ToLower() == candidate.Email.ToLower());
+            bool dupPhone = !string.IsNullOrEmpty(candidate.Phone) && 
+                _context.Candidates.Any(c => c.CandidateId != candidate.CandidateId && c.Phone == candidate.Phone);
+            return dupEmail || dupPhone;
         }
     }
 }

@@ -117,10 +117,10 @@
                                 <div class="col-auto text-center">
                                     <div class="text-muted small">Interviewer</div>
                                     <div class="fw-medium">
-                                        @if (iv.Interviewer != null)
+                                                                        @if (iv.technicalInterviewers().Any())
                                         {
                                             <i class="bi bi-person-check me-1 text-success"></i>
-                                            <span>@iv.Interviewer.Name</span>
+                                            <span>@string.Join(", ", iv.technicalInterviewers().Select(u => u.Name))</span>
                                         }
                                         else
                                         {
@@ -316,9 +316,9 @@
                                                 <small class="text-muted">@(iv.Job?.JobTitle ?? "")</small>
                                             </td>
                                             <td>
-                                                @if (iv.Interviewer != null)
+                                                @if (iv.technicalInterviewers().Any())
                                                 {
-                                                    <span><i class="bi bi-person-check me-1 text-success"></i>@iv.Interviewer.Name</span>
+                                                    <span><i class="bi bi-person-check me-1 text-success"></i>@string.Join(", ", iv.technicalInterviewers().Select(u => u.Name))</span>
                                                 }
                                                 else
                                                 {

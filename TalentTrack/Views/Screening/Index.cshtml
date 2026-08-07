@@ -4,6 +4,13 @@
     ViewData["Title"] = "Screening";
 }
 
+<div class="mb-3">
+    <a href="javascript:history.back()" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span>Back</span>
+    </a>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="fw-bold mb-1">Screening Dashboard</h2>
@@ -69,6 +76,12 @@
                                     else if (item.ApplicationStatus == "Rejected")
                                     {
                                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">@item.ApplicationStatus</span>
+                                    }
+                                    else if (item.ApplicationStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark border border-warning px-2 py-1" title="@item.DuplicateReason">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Pending: Repeat Candidate
+                                        </span>
                                     }
                                     else
                                     {

@@ -43,7 +43,8 @@ namespace TalentTrack.Controllers
                 UpcomingInterviews = _context.Interviews
                     .Include(i => i.Candidate)
                     .Include(i => i.Job)
-                    .Include(i => i.Interviewer)
+                    .Include(i => i.Participants)
+                        .ThenInclude(p => p.Recruiter)
                     .Where(i => i.InterviewDate >= DateTime.Now)
                     .OrderBy(i => i.InterviewDate)
                     .Take(5)
@@ -51,7 +52,8 @@ namespace TalentTrack.Controllers
                 TodayInterviews = _context.Interviews
                     .Include(i => i.Candidate)
                     .Include(i => i.Job)
-                    .Include(i => i.Interviewer)
+                    .Include(i => i.Participants)
+                        .ThenInclude(p => p.Recruiter)
                     .Where(i => i.InterviewDate.Date == today)
                     .OrderBy(i => i.InterviewDate)
                     .ToList()

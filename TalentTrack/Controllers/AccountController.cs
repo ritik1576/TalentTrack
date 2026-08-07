@@ -45,8 +45,8 @@ namespace TalentTrack.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
-            // Check UserAccounts table
-            var userAccount = _context.UserAccounts
+            // Check Recruiters table
+            var userAccount = _context.Recruiters
                 .FirstOrDefault(u => u.Email.ToLower() == email && u.Password == password);
 
             if (userAccount != null)
@@ -107,7 +107,7 @@ namespace TalentTrack.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(UserAccount model)
+        public IActionResult Register(Recruiter model)
         {
             if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
             {
@@ -129,7 +129,7 @@ namespace TalentTrack.Controllers
             model.Email = model.Email.Trim().ToLower();
 
             // Check if email already registered
-            if (_context.UserAccounts.Any(u => u.Email.ToLower() == model.Email))
+            if (_context.Recruiters.Any(u => u.Email.ToLower() == model.Email))
             {
                 ViewBag.Error = "An account with this email address already exists. Please Sign In or use another email.";
                 return View(model);
@@ -138,8 +138,9 @@ namespace TalentTrack.Controllers
             model.Status = "Pending";
             model.IsApproved = false;
             model.CreatedAt = DateTime.Now;
+            model.CreatedBy = "Self";
 
-            _context.UserAccounts.Add(model);
+            _context.Recruiters.Add(model);
 
             // Also create Interviewer record if role is Interviewer
             if (model.Role == "Interviewer")
@@ -183,10 +184,10 @@ namespace TalentTrack.Controllers
             }
 
             var currentEmail = HttpContext.Session.GetString("UserEmail");
-            UserAccount? dbUser = null;
+            Recruiter? dbUser = null;
             if (!string.IsNullOrEmpty(currentEmail))
             {
-                dbUser = _context.UserAccounts.FirstOrDefault(u => u.Email.ToLower() == currentEmail.ToLower());
+                dbUser = _context.Recruiters.FirstOrDefault(u => u.Email.ToLower() == currentEmail.ToLower());
             }
 
             ViewBag.UserName = HttpContext.Session.GetString("UserName") ?? dbUser?.Name ?? "Recruiter";
@@ -237,12 +238,14 @@ namespace TalentTrack.Controllers
             var currentEmail = HttpContext.Session.GetString("UserEmail");
             if (!string.IsNullOrEmpty(currentEmail))
             {
-                var dbUser = _context.UserAccounts.FirstOrDefault(u => u.Email.ToLower() == currentEmail.ToLower());
+                var dbUser = _context.Recruiters.FirstOrDefault(u => u.Email.ToLower() == currentEmail.ToLower());
                 if (dbUser != null)
                 {
                     dbUser.Name = name ?? "";
                     dbUser.Email = email ?? "";
                     dbUser.Phone = phone ?? "";
+                    dbUser.UpdatedAt = DateTime.Now;
+                    dbUser.UpdatedBy = name ?? dbUser.Name;
                     _context.SaveChanges();
                 }
             }

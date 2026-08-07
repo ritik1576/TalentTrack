@@ -72,7 +72,7 @@
                 <div class="d-flex flex-column gap-3">
                     @foreach (var iv in Model.TodayInterviews)
                     {
-                        var hasFeedback = iv.Feedbacks != null && iv.Feedbacks.Any();
+                        var hasFeedback = iv.Feedbacks != null && iv.Feedbacks.Any(f => f.InterviewerId == Model.CurrentInterviewer.InterviewerId);
                         <div class="tt-schedule-card today">
                             <div class="row align-items-center">
                                 <div class="col-auto">
@@ -81,15 +81,15 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="fw-bold">@(iv.Candidate?.Name ?? "N/A")</div>
+                                    <div class="fw-bold">
+                                        <a href="/Candidates/Profile/@iv.CandidateId" class="text-primary text-decoration-none hover-opacity">
+                                            @(iv.Candidate?.Name ?? "N/A")
+                                        </a>
+                                    </div>
                                     <div class="text-muted small">
                                         <i class="bi bi-briefcase me-1"></i>@(iv.Job?.JobTitle ?? "N/A")
                                         &nbsp;|&nbsp;
                                         <i class="bi bi-clock me-1"></i>@iv.InterviewDate.ToString("hh:mm tt")
-                                        @if (!string.IsNullOrEmpty(iv.Mode))
-                                        {
-                                            <span>&nbsp;|&nbsp;<i class="bi bi-camera-video me-1"></i>@iv.Mode</span>
-                                        }
                                     </div>
                                     @if (!string.IsNullOrEmpty(iv.Notes))
                                     {
@@ -138,13 +138,12 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">Candidate</th>
-                            <th>Position</th>
-                            <th>Date & Time</th>
-                            <th>Mode</th>
-                            <th>Status</th>
-                            <th class="pe-4 text-end">Action</th>
-                        </tr>
+                                                            <th class="ps-4">Candidate</th>
+                                                            <th>Position</th>
+                                                            <th>Date & Time</th>
+                                                            <th>Status</th>
+                                                            <th class="pe-4 text-end">Action</th>
+                                                        </tr>
                     </thead>
                     <tbody>
                         @if (Model.UpcomingInterviews.Any())
@@ -157,7 +156,9 @@
                                             <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width:32px;height:32px;font-size:12px;">
                                                 @(iv.Candidate?.Name?.Substring(0,1).ToUpper() ?? "?")
                                             </div>
-                                            @(iv.Candidate?.Name ?? "N/A")
+                                            <a href="/Candidates/Profile/@iv.CandidateId" class="text-primary text-decoration-none hover-opacity fw-medium">
+                                                @(iv.Candidate?.Name ?? "N/A")
+                                            </a>
                                         </div>
                                     </td>
                                     <td>@(iv.Job?.JobTitle ?? "N/A")</td>
@@ -166,23 +167,27 @@
                                         <small class="text-muted">@iv.InterviewDate.ToString("hh:mm tt")</small>
                                     </td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(iv.Mode))
+                                        @if (iv.Status == "Completed" || (iv.Feedbacks != null && iv.Feedbacks.Any(f => f.InterviewerId == Model.CurrentInterviewer.InterviewerId)))
                                         {
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">@iv.Mode</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Completed</span>
                                         }
                                         else
                                         {
-                                            <span class="text-muted small">—</span>
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">@iv.Status</span>
                                         }
                                     </td>
-                                    <td>
-                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">@iv.Status</span>
-                                    </td>
                                     <td class="pe-4 text-end">
-                                        <a asp-controller="Feedback" asp-action="Create" asp-route-interviewId="@iv.InterviewId"
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-star"></i> Feedback
-                                        </a>
+                                        @if (iv.Feedbacks != null && iv.Feedbacks.Any(f => f.InterviewerId == Model.CurrentInterviewer.InterviewerId))
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Submitted</span>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Feedback" asp-action="Create" asp-route-interviewId="@iv.InterviewId"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-star"></i> Feedback
+                                            </a>
+                                        }
                                     </td>
                                 </tr>
                             }

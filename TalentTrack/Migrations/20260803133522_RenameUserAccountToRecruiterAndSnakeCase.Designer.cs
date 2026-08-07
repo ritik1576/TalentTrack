@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TalentTrack.Data;
 
@@ -11,9 +12,11 @@ using TalentTrack.Data;
 namespace TalentTrack.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260803133522_RenameUserAccountToRecruiterAndSnakeCase")]
+    partial class RenameUserAccountToRecruiterAndSnakeCase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,25 +24,6 @@ namespace TalentTrack.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("InterviewInterviewers", b =>
-                {
-                    b.Property<int>("InterviewId")
-                        .HasColumnType("int")
-                        .HasColumnName("interview_id");
-
-                    b.Property<int>("InterviewerId")
-                        .HasColumnType("int")
-                        .HasColumnName("interviewer_id");
-
-                    b.HasKey("InterviewId", "InterviewerId")
-                        .HasName("pk_interview_interviewers");
-
-                    b.HasIndex("InterviewerId")
-                        .HasDatabaseName("ix_interview_interviewers_interviewer_id");
-
-                    b.ToTable("interview_interviewers", (string)null);
-                });
 
             modelBuilder.Entity("TalentTrack.Models.Candidate", b =>
                 {
@@ -183,6 +167,10 @@ namespace TalentTrack.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("interview_date");
 
+                    b.Property<int?>("InterviewerId")
+                        .HasColumnType("int")
+                        .HasColumnName("interviewer_id");
+
                     b.Property<int?>("JobId")
                         .HasColumnType("int")
                         .HasColumnName("job_id");
@@ -215,6 +203,9 @@ namespace TalentTrack.Migrations
 
                     b.HasIndex("CandidateId")
                         .HasDatabaseName("ix_interviews_candidate_id");
+
+                    b.HasIndex("InterviewerId")
+                        .HasDatabaseName("ix_interviews_interviewer_id");
 
                     b.HasIndex("JobId")
                         .HasDatabaseName("ix_interviews_job_id");
@@ -727,23 +718,6 @@ namespace TalentTrack.Migrations
                     b.ToTable("screening_skill_evaluations", (string)null);
                 });
 
-            modelBuilder.Entity("InterviewInterviewers", b =>
-                {
-                    b.HasOne("TalentTrack.Models.Interview", null)
-                        .WithMany()
-                        .HasForeignKey("InterviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_interview_interviewers_interviews_interview_id");
-
-                    b.HasOne("TalentTrack.Models.Interviewer", null)
-                        .WithMany()
-                        .HasForeignKey("InterviewerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_interview_interviewers_interviewers_interviewer_id");
-                });
-
             modelBuilder.Entity("TalentTrack.Models.CandidateApplication", b =>
                 {
                     b.HasOne("TalentTrack.Models.Candidate", "Candidate")
@@ -785,6 +759,11 @@ namespace TalentTrack.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_interviews_candidates_candidate_id");
+
+                    b.HasOne("TalentTrack.Models.Interviewer", null)
+                        .WithMany("Interviews")
+                        .HasForeignKey("InterviewerId")
+                        .HasConstraintName("fk_interviews_interviewers_interviewer_id");
 
                     b.HasOne("TalentTrack.Models.Job", "Job")
                         .WithMany()
@@ -901,6 +880,8 @@ namespace TalentTrack.Migrations
             modelBuilder.Entity("TalentTrack.Models.Interviewer", b =>
                 {
                     b.Navigation("Feedbacks");
+
+                    b.Navigation("Interviews");
                 });
 
             modelBuilder.Entity("TalentTrack.Models.Job", b =>

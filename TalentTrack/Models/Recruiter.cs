@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TalentTrack.Models
 {
-    public class UserAccount
+    public class Recruiter
     {
         [Key]
-        public int UserAccountId { get; set; }
+        public int RecruiterId { get; set; }
 
         [Required]
         public string Name { get; set; } = "";
@@ -29,6 +29,21 @@ namespace TalentTrack.Models
 
         public bool IsApproved { get; set; } = false;
 
+        // Metadata / Audit fields
+        public string? CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+
+        // Relationships
+        public virtual ICollection<InterviewParticipant> InterviewParticipants { get; set; } = new List<InterviewParticipant>();
+
+        // Helper method
+        public IEnumerable<Interview> interviews()
+        {
+            return InterviewParticipants
+                .Where(ip => ip.Interview != null)
+                .Select(ip => ip.Interview!);
+        }
     }
 }

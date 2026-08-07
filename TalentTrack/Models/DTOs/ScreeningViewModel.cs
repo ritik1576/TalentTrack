@@ -13,8 +13,10 @@ namespace TalentTrack.Models.DTOs
         // Skill evaluation inputs from the form
         public List<ScreeningSkillInput> SkillInputs { get; set; } = new();
 
-        // Duplicate detection flag
+        // Duplicate detection flag and details
         public bool HasPreviousScreening { get; set; }
+        public List<Screening> PreviousScreenings { get; set; } = new();
+        public List<Interview> PreviousInterviews { get; set; } = new();
 
         public string? Notes { get; set; }
     }
