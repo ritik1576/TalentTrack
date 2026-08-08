@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TalentTrack.Data;
+using TalentTrack.Models;
+using TalentTrack.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
     ).UseSnakeCaseNamingConvention());
+
+// Configure Email Settings
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// Register Email Service
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 // Add Session support
 builder.Services.AddSession(options =>

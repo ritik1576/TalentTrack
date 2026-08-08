@@ -4,18 +4,22 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TalentTrack.Data;
 using TalentTrack.Models;
+using TalentTrack.Services;
 
 namespace TalentTrack.Controllers
 {
     public class InterviewController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public InterviewController(ApplicationDbContext context)
+        public InterviewController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // List all interviews (Recruiter / Admin view) with search and filtering
@@ -93,7 +97,7 @@ namespace TalentTrack.Controllers
 
         // Save Scheduled Interview
         [HttpPost]
-        public IActionResult Create(Interview interview, int? SelectedRecruiterId, int[] SelectedInterviewers)
+        public async Task<IActionResult> Create(Interview interview, int? SelectedRecruiterId, int[] SelectedInterviewers)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
@@ -139,7 +143,7 @@ namespace TalentTrack.Controllers
 
                     _context.SaveChanges();
 
-                    SendNotificationsAndMails(interview, "Invitation: New Panel Interview Scheduled");
+                    await SendNotificationsAndMailsAsync(interview, "Invitation: New Panel Interview Scheduled");
                     
                     transaction.Commit();
                     Console.WriteLine("[LOG] Interview Created");
@@ -224,7 +228,7 @@ namespace TalentTrack.Controllers
 
         // Save Edited Interview
         [HttpPost]
-        public IActionResult Edit(Interview interview, int? SelectedRecruiterId, int[] SelectedInterviewers)
+        public async Task<IActionResult> Edit(Interview interview, int? SelectedRecruiterId, int[] SelectedInterviewers)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
@@ -298,13 +302,13 @@ namespace TalentTrack.Controllers
 
                     if (interview.Status == "Cancelled")
                     {
-                        SendNotificationsAndMails(existingInterview, "Cancellation: Interview Cancelled", isCancel: true);
+                        await SendNotificationsAndMailsAsync(existingInterview, "Cancellation: Interview Cancelled", isCancel: true);
                         Console.WriteLine("[LOG] Interview Cancelled");
                     }
                     else
                     {
                         string subject = isRescheduled ? "Reschedule: Interview Rescheduled" : "Update: Interview Details Updated";
-                        SendNotificationsAndMails(existingInterview, subject);
+                        await SendNotificationsAndMailsAsync(existingInterview, subject);
                         if (isRescheduled)
                         {
                             Console.WriteLine("[LOG] Interview Rescheduled");
@@ -379,7 +383,7 @@ namespace TalentTrack.Controllers
         }
 
         // Direct Cancellation helper
-        public IActionResult Cancel(int id)
+        public async Task<IActionResult> Cancel(int id)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
@@ -396,7 +400,7 @@ namespace TalentTrack.Controllers
                     interview.Status = "Cancelled";
                     _context.SaveChanges();
 
-                    SendNotificationsAndMails(interview, "Cancellation: Interview Cancelled", isCancel: true);
+                    await SendNotificationsAndMailsAsync(interview, "Cancellation: Interview Cancelled", isCancel: true);
                     transaction.Commit();
                     Console.WriteLine("[LOG] Interview Cancelled");
 
@@ -548,7 +552,7 @@ namespace TalentTrack.Controllers
             return false;
         }
 
-        private void SendNotificationsAndMails(Interview interview, string subject, bool isCancel = false)
+        private async Task SendNotificationsAndMailsAsync(Interview interview, string subject, bool isCancel = false)
         {
             try
             {
@@ -662,11 +666,276 @@ namespace TalentTrack.Controllers
                 }
 
                 _context.SaveChanges();
+
+                // Trigger real email sending asynchronously
+                try
+                {
+                    // Collect all unique recipient email addresses and map to their names
+                    var recipientEmails = new List<string>();
+                    var recipientNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    if (candidate != null && !string.IsNullOrEmpty(candidate.Email))
+                    {
+                        recipientEmails.Add(candidate.Email);
+                        recipientNames[candidate.Email] = candidate.Name ?? "Candidate";
+                    }
+
+                    foreach (var p in participants)
+                    {
+                        if (p.Recruiter != null && !string.IsNullOrEmpty(p.Recruiter.Email))
+                        {
+                            recipientEmails.Add(p.Recruiter.Email);
+                            recipientNames[p.Recruiter.Email] = p.Recruiter.Name ?? "Recruiter";
+                        }
+                    }
+
+                    foreach (var iv in interviewers)
+                    {
+                        if (!string.IsNullOrEmpty(iv.Email))
+                        {
+                            recipientEmails.Add(iv.Email);
+                            recipientNames[iv.Email] = iv.Name ?? "Interviewer";
+                        }
+                    }
+
+                    var uniqueRecipients = recipientEmails.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                    // Determine styling and text based on scenario
+                    string title = subject;
+                    string introMessage = "You have been invited to an interview. Here are the details:";
+                    string statusText = "Scheduled";
+                    string badgeBg = "#e0e7ff"; // Indigo light
+                    string badgeColor = "#4338ca"; // Indigo deep
+
+                    if (isCancel)
+                    {
+                        statusText = "Cancelled";
+                        badgeBg = "#ffe4e6"; // Rose light
+                        badgeColor = "#e11d48"; // Rose deep
+                        introMessage = "Please note that the following interview has been cancelled. If you have any questions, please contact the recruiter.";
+                    }
+                    else if (subject.Contains("Reschedule") || subject.Contains("Rescheduled"))
+                    {
+                        statusText = "Rescheduled";
+                        badgeBg = "#fef3c7"; // Amber light
+                        badgeColor = "#d97706"; // Amber deep
+                        introMessage = "Please note that your interview schedule has been updated. Here are the rescheduled details:";
+                    }
+                    else if (subject.Contains("Update") || subject.Contains("Updated"))
+                    {
+                        statusText = "Updated";
+                        badgeBg = "#e0f2fe"; // Sky light
+                        badgeColor = "#0284c7"; // Sky deep
+                        introMessage = "The details for your upcoming interview have been updated. Please review the changes below:";
+                    }
+
+                    foreach (var email in uniqueRecipients)
+                    {
+                        try
+                        {
+                            string recipientName = recipientNames.TryGetValue(email, out var rName) ? rName : "Participant";
+
+                            string htmlBody = GetHtmlEmailBody(
+                                title,
+                                introMessage,
+                                statusText,
+                                badgeBg,
+                                badgeColor,
+                                recipientName,
+                                candidate?.Name ?? "N/A",
+                                job?.JobTitle,
+                                interview.InterviewDate,
+                                interview.Duration,
+                                interview.Mode ?? "Offline",
+                                interview.MeetingLink,
+                                panelString,
+                                interview.Notes,
+                                companyName
+                            );
+
+                            await _emailService.SendEmailAsync(email, subject, htmlBody);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[LOG] Actual Email Failed to {email}: {ex.Message}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LOG] Actual Email Process failed: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[LOG] Email Failed: {ex.Message}");
+                Console.WriteLine($"[LOG] Email Processing Failed: {ex.Message}");
             }
+        }
+
+        private string GetHtmlEmailBody(
+            string title, 
+            string introMessage, 
+            string statusText, 
+            string badgeBg, 
+            string badgeColor, 
+            string recipientName,
+            string candidateName, 
+            string? position, 
+            DateTime interviewDate, 
+            int duration, 
+            string mode, 
+            string? meetingLink, 
+            string panelString, 
+            string? notes, 
+            string companyName)
+        {
+            var badgeHtml = $@"<span style=""display: inline-block; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 9999px; background-color: {badgeBg}; color: {badgeColor}; text-transform: uppercase; letter-spacing: 0.05em;"">{statusText}</span>";
+            
+            var positionRowHtml = "";
+            if (!string.IsNullOrEmpty(position))
+            {
+                positionRowHtml = $@"
+                <tr>
+                    <td width=""32"" valign=""top"" style=""padding-bottom: 16px;"">
+                        <span style=""font-size: 18px;"">💼</span>
+                    </td>
+                    <td style=""padding-bottom: 16px;"">
+                        <div style=""font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;"">Position</div>
+                        <div style=""font-size: 15px; font-weight: 600; color: #1e293b;"">{position}</div>
+                    </td>
+                </tr>";
+            }
+
+            var panelRowHtml = "";
+            if (!string.IsNullOrEmpty(panelString))
+            {
+                panelRowHtml = $@"
+                <tr>
+                    <td width=""32"" valign=""top"" style=""padding-bottom: 16px;"">
+                        <span style=""font-size: 18px;"">👥</span>
+                    </td>
+                    <td style=""padding-bottom: 16px;"">
+                        <div style=""font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;"">Interview Panel</div>
+                        <div style=""font-size: 15px; font-weight: 600; color: #1e293b;"">{panelString}</div>
+                    </td>
+                </tr>";
+            }
+
+            var notesHtml = "";
+            if (!string.IsNullOrEmpty(notes) && notes != "None")
+            {
+                notesHtml = $@"
+                <div style=""margin-top: 24px; padding: 16px; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; margin-bottom: 28px;"">
+                    <div style=""font-size: 13px; font-weight: 700; color: #b45309; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;"">Notes & Instructions</div>
+                    <div style=""font-size: 14px; line-height: 1.5; color: #78350f;"">{notes}</div>
+                </div>";
+            }
+
+            var ctaHtml = "";
+            if (mode == "Online" && !string.IsNullOrEmpty(meetingLink) && meetingLink != "N/A")
+            {
+                ctaHtml = $@"
+                <div style=""text-align: center; margin-top: 32px; margin-bottom: 12px;"">
+                    <a href=""{meetingLink}"" target=""_blank"" style=""display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #ffffff; background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); border-radius: 10px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -2px rgba(79, 70, 229, 0.2);"">Join Video Interview</a>
+                </div>";
+            }
+
+            var formattedDate = interviewDate.ToString("dd MMM yyyy, dddd");
+            var formattedTime = interviewDate.ToString("hh:mm tt");
+
+            var currentYear = DateTime.Now.Year;
+
+            return $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Interview Notification</title>
+</head>
+<body style=""margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;"">
+    <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""background-color: #f8fafc; padding: 40px 0;"">
+        <tr>
+            <td align=""center"">
+                <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0;"">
+                    <tr>
+                        <td height=""6"" style=""background: linear-gradient(90deg, #4f46e5 0%, #06b6d4 100%);""></td>
+                    </tr>
+                    <tr>
+                        <td align=""center"" style=""padding: 32px 32px 24px 32px; border-bottom: 1px solid #f1f5f9;"">
+                            <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                <tr>
+                                    <td align=""left"" style=""font-size: 24px; font-weight: 800; letter-spacing: -0.025em; color: #0f172a;"">
+                                        <span style=""color: #4f46e5;"">Talent</span>Track
+                                    </td>
+                                    <td align=""right"">
+                                        {badgeHtml}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style=""padding: 32px;"">
+                            <div style=""margin-bottom: 20px; font-size: 15px; color: #334155; line-height: 1.5;"">
+                                <strong>To,</strong><br>
+                                <span style=""font-size: 16px; font-weight: 700; color: #4f46e5;"">{recipientName}</span>
+                            </div>
+                            <h1 style=""margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.3;"">
+                                {title}
+                            </h1>
+                            <p style=""margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #475569;"">
+                                {introMessage}
+                            </p>
+                            <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 28px;"">
+                                <tr>
+                                    <td>
+                                        <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""32"" valign=""top"" style=""padding-bottom: 16px;"">
+                                                    <span style=""font-size: 18px;"">👤</span>
+                                                </td>
+                                                <td style=""padding-bottom: 16px;"">
+                                                    <div style=""font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;"">Candidate</div>
+                                                    <div style=""font-size: 15px; font-weight: 600; color: #1e293b;"">{candidateName}</div>
+                                                </td>
+                                            </tr>
+                                            {positionRowHtml}
+                                            <tr>
+                                                <td width=""32"" valign=""top"" style=""padding-bottom: 16px;"">
+                                                    <span style=""font-size: 18px;"">📅</span>
+                                                </td>
+                                                <td style=""padding-bottom: 16px;"">
+                                                    <div style=""font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;"">Schedule</div>
+                                                    <div style=""font-size: 15px; font-weight: 600; color: #1e293b;"">{formattedDate} at {formattedTime} <span style=""font-size: 13px; font-weight: 400; color: #64748b;"">({duration} mins)</span></div>
+                                                </td>
+                                            </tr>
+                                            {panelRowHtml}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            {notesHtml}
+                            {ctaHtml}
+                            <p style=""margin: 28px 0 0 0; font-size: 15px; line-height: 1.5; color: #475569;"">
+                                Regards,<br>
+                                <strong style=""color: #0f172a;"">Talent Track Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style=""padding: 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;"">
+                            <p style=""margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #475569;"">TalentTrack Recruitment Suite</p>
+                            <p style=""margin: 0 0 16px 0; font-size: 12px; color: #94a3b8; line-height: 1.5;"">This is an automated notification regarding your scheduled interview processes. Please do not reply directly to this mail.</p>
+                            <div style=""margin-top: 16px; font-size: 12px; color: #cbd5e1;"">&copy; {currentYear} {companyName}. All rights reserved.</div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>";
         }
 
         private void SendSimulatedEmail(string toEmail, string subject, string body)
