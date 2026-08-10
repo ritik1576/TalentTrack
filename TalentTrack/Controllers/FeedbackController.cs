@@ -51,6 +51,7 @@ namespace TalentTrack.Controllers
             var interview = _context.Interviews
                 .Include(i => i.Candidate)
                 .Include(i => i.Job)
+                    .ThenInclude(j => j.JobSkills)
                 .FirstOrDefault(i => i.InterviewId == interviewId);
 
             if (interview == null) return NotFound();
@@ -150,6 +151,7 @@ namespace TalentTrack.Controllers
             var feedback = _context.InterviewFeedbacks
                 .Include(f => f.Candidate)
                 .Include(f => f.Interviewer)
+                .Include(f => f.SkillRatings)
                 .Include(f => f.Interview)
                     .ThenInclude(i => i!.Job)
                 .FirstOrDefault(f => f.FeedbackId == id);

@@ -33,7 +33,7 @@
             <form asp-action="Create" method="post">
                 <input type="hidden" asp-for="InterviewId" />
                 <input type="hidden" asp-for="CandidateId" />
-                <input type="hidden" name="Recommendation" id="recommendationValue" value="Hold" />
+                <input type="hidden" name="Recommendation" id="recommendationValue" value="Recommended" />
 
                 <!-- Overall Rating -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -60,43 +60,17 @@
 
                 <!-- Skill Scores -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-header bg-white border-0 py-3 px-4">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Skill Scores</h5>
+                    <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Technical Skill Ratings</h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="showAddSkillModal()">
+                            <i class="bi bi-plus-lg me-1"></i> Add Manual Skill
+                        </button>
                     </div>
                     <div class="card-body p-4">
-                        <p class="text-muted small mb-4">Rate each skill from 1 to 10.</p>
+                        <p class="text-muted small mb-4">Rate each required skill on a scale of 1 to 5 and provide brief comments.</p>
 
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="fw-medium">Technical Skills</label>
-                                <span id="techVal" class="badge bg-primary">5</span>
-                            </div>
-                            <input type="range" name="TechnicalScore" id="techSlider" class="tt-score-slider"
-                                   min="1" max="10" value="5"
-                                   oninput="updateSlider(this, 'techVal')" />
-                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Expert)</span></div>
-                        </div>
-
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="fw-medium">Communication</label>
-                                <span id="commVal" class="badge bg-success">5</span>
-                            </div>
-                            <input type="range" name="CommunicationScore" id="commSlider" class="tt-score-slider"
-                                   min="1" max="10" value="5"
-                                   oninput="updateSlider(this, 'commVal')" />
-                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Excellent)</span></div>
-                        </div>
-
-                        <div class="mb-2">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="fw-medium">Problem Solving</label>
-                                <span id="probVal" class="badge bg-warning text-dark">5</span>
-                            </div>
-                            <input type="range" name="ProblemSolvingScore" id="probSlider" class="tt-score-slider"
-                                   min="1" max="10" value="5"
-                                   oninput="updateSlider(this, 'probVal')" />
-                            <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;"><span>1 (Weak)</span><span>10 (Excellent)</span></div>
+                        <div id="dynamicSkillsContainer" class="d-flex flex-column gap-4">
+                            <!-- Dynamically Rendered Skills -->
                         </div>
                     </div>
                 </div>
@@ -104,24 +78,14 @@
                 <!-- Qualitative Feedback -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-header bg-white border-0 py-3 px-4">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-text-fill text-info me-2"></i>Detailed Feedback</h5>
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-text-fill text-info me-2"></i>Detailed Feedback / Comments</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium text-success"><i class="bi bi-plus-circle me-1"></i>Strengths</label>
-                                <textarea name="Strengths" class="form-control" rows="4"
-                                          placeholder="e.g. Strong problem-solving, good knowledge of React, communicates clearly..."></textarea>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium text-danger"><i class="bi bi-dash-circle me-1"></i>Areas to Improve</label>
-                                <textarea name="Weaknesses" class="form-control" rows="4"
-                                          placeholder="e.g. Needs to improve system design knowledge, sometimes verbose..."></textarea>
-                            </div>
                             <div class="col-12">
-                                <label class="form-label fw-medium"><i class="bi bi-sticky me-1"></i>Additional Comments</label>
-                                <textarea name="Comments" class="form-control" rows="3"
-                                          placeholder="Any other notes, observations, or context for the recruiter..."></textarea>
+                                <label class="form-label fw-medium"><i class="bi bi-chat-left-quote-fill me-1 text-primary"></i>Overall Comments</label>
+                                <textarea name="Comments" id="overallCommentsInput" class="form-control" rows="4" required
+                                          placeholder="Write your comprehensive assessment of the candidate's performance, qualifications, and fit for the role..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -135,28 +99,48 @@
                     <div class="card-body p-4">
                         <p class="text-muted small mb-3">What is your hiring recommendation for this candidate?</p>
                         <div class="d-flex gap-3 flex-wrap">
-                            <button type="button" class="tt-recommend-btn hire" onclick="setRecommendation('Hire', this)">
-                                <i class="bi bi-check-circle-fill me-2"></i>Hire
+                            <button type="button" class="tt-recommend-btn hire active" onclick="setRecommendation('Recommended', this)">
+                                <i class="bi bi-check-circle-fill me-2"></i>Recommended
                             </button>
-                            <button type="button" class="tt-recommend-btn hold active" onclick="setRecommendation('Hold', this)">
-                                <i class="bi bi-pause-circle-fill me-2"></i>Hold / Consider
-                            </button>
-                            <button type="button" class="tt-recommend-btn reject" onclick="setRecommendation('Reject', this)">
-                                <i class="bi bi-x-circle-fill me-2"></i>Reject
+                            <button type="button" class="tt-recommend-btn reject" onclick="setRecommendation('Not Recommended', this)">
+                                <i class="bi bi-x-circle-fill me-2"></i>Not Recommended
                             </button>
                         </div>
-                        <div id="recLabel" class="mt-3 text-muted small">Selected: <strong>Hold</strong></div>
+                        <div id="recLabel" class="mt-3 text-muted small">Selected: <strong>Recommended</strong></div>
                     </div>
                 </div>
 
                 <!-- Submit -->
                 <div class="d-flex gap-3 justify-content-end">
                     <a asp-controller="Interviewer" asp-action="Dashboard" class="btn btn-outline-secondary px-4">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-5">
+                    <button type="button" onclick="submitFeedbackForm()" class="btn btn-primary px-5">
                         <i class="bi bi-send-fill me-2"></i>Submit Feedback
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Skill Modal -->
+<div class="modal fade" id="addSkillModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Add Custom Skill</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <div class="mb-3">
+                    <label for="customSkillName" class="form-label fw-medium">Skill Name</label>
+                    <input type="text" class="form-control" id="customSkillName" placeholder="e.g. AWS, Git, CI/CD" />
+                    <div id="modalError" class="text-danger small mt-1 d-none"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="addManualSkill()">Add Skill</button>
+            </div>
         </div>
     </div>
 </div>
@@ -173,19 +157,113 @@
         });
     });
 
-    // Slider update
-    function updateSlider(el, valId) {
-        document.getElementById(valId).textContent = el.value;
+    // Dynamic skills array
+    let skillsList = [
+        @if (interview?.Job?.JobSkills != null)
+        {
+            foreach (var js in interview.Job.JobSkills)
+            {
+                <text>{ jobSkillId: @js.JobSkillId, name: "@js.SkillName", source: "@js.Source", rating: 3, comment: "" },</text>
+            }
+        }
+    ];
+
+    function renderDynamicSkills() {
+        const container = document.getElementById('dynamicSkillsContainer');
+        if (skillsList.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                    <span>No criteria skills found for this job. Add custom skills if needed.</span>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = skillsList.map((skill, index) => `
+            <div class="border rounded-4 p-3 bg-light bg-opacity-30 position-relative">
+                ${skill.source === 'manual' ? `
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" style="font-size: 0.8rem;" onclick="removeSkill(${index})"></button>
+                ` : ''}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark d-flex align-items-center gap-2">
+                        ${skill.name}
+                        <span class="badge ${skill.source === 'jd_extracted' ? 'bg-primary' : 'bg-secondary'} bg-opacity-10 text-${skill.source === 'jd_extracted' ? 'primary' : 'secondary'} border border-${skill.source === 'jd_extracted' ? 'primary' : 'secondary'} border-opacity-25 py-1" style="font-size: 0.7rem;">
+                            ${skill.source === 'jd_extracted' ? 'JD Extracted' : 'Manual'}
+                        </span>
+                    </span>
+                    <span class="badge bg-primary fs-6">Rating: <strong id="skillVal_${index}">${skill.rating}</strong> / 5</span>
+                </div>
+                <div class="mb-3">
+                    <input type="range" class="tt-score-slider w-100" min="1" max="5" value="${skill.rating}" oninput="updateSkillSlider(this, ${index})" />
+                    <div class="d-flex justify-content-between text-muted small mt-1"><span>1 (Weak)</span><span>5 (Expert)</span></div>
+                </div>
+                <div>
+                    <label class="form-label small text-muted">Detailed Skill Comments</label>
+                    <textarea class="form-control form-control-sm" rows="2" placeholder="Specific notes about candidate's skill in ${skill.name}..." oninput="updateSkillComment(this, ${index})">${skill.comment}</textarea>
+                </div>
+            </div>
+        `).join('');
+        
+        // Init sliders property update
+        document.querySelectorAll('#dynamicSkillsContainer input[type="range"]').forEach(el => {
+            const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+            el.style.setProperty('--val', pct + '%');
+        });
+    }
+
+    function updateSkillSlider(el, index) {
+        skillsList[index].rating = parseInt(el.value);
+        document.getElementById(`skillVal_${index}`).textContent = el.value;
         const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
         el.style.setProperty('--val', pct + '%');
     }
 
-    // Init sliders
-    ['techSlider','commSlider','probSlider'].forEach(id => {
-        const el = document.getElementById(id);
-        const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
-        el.style.setProperty('--val', pct + '%');
-    });
+    function updateSkillComment(el, index) {
+        skillsList[index].comment = el.value;
+    }
+
+    function removeSkill(index) {
+        skillsList.splice(index, 1);
+        renderDynamicSkills();
+    }
+
+    function showAddSkillModal() {
+        document.getElementById('customSkillName').value = '';
+        document.getElementById('modalError').classList.add('d-none');
+        const modal = new bootstrap.Modal(document.getElementById('addSkillModal'));
+        modal.show();
+    }
+
+    function addManualSkill() {
+        const nameInput = document.getElementById('customSkillName');
+        const name = nameInput.value.trim();
+        const errorEl = document.getElementById('modalError');
+
+        if (!name) {
+            errorEl.textContent = 'Skill name is required.';
+            errorEl.classList.remove('d-none');
+            return;
+        }
+
+        const isDuplicate = skillsList.some(s => s.name.toLowerCase() === name.toLowerCase());
+        if (isDuplicate) {
+            errorEl.textContent = 'This skill is already in the list.';
+            errorEl.classList.remove('d-none');
+            return;
+        }
+
+        skillsList.push({
+            jobSkillId: null,
+            name: name,
+            source: 'manual',
+            rating: 3,
+            comment: ''
+        });
+
+        renderDynamicSkills();
+        bootstrap.Modal.getInstance(document.getElementById('addSkillModal')).hide();
+    }
 
     // Recommendation
     function setRecommendation(val, btn) {
@@ -194,5 +272,59 @@
         document.querySelectorAll('.tt-recommend-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
+
+    async function submitFeedbackForm() {
+        const overallComments = document.getElementById('overallCommentsInput').value.trim();
+        if (!overallComments) {
+            alert('Overall comments are required.');
+            return;
+        }
+
+        // Validate individual ratings
+        for (const s of skillsList) {
+            if (s.rating < 1 || s.rating > 5) {
+                alert(`Rating for skill '${s.name}' must be between 1 and 5.`);
+                return;
+            }
+        }
+
+        const payload = {
+            candidateId: parseInt('@Model.CandidateId'),
+            jobId: parseInt('@(interview?.JobId ?? 0)'),
+            overallComments: overallComments,
+            finalRecommendation: document.getElementById('recommendationValue').value,
+            skills: skillsList.map(s => ({
+                jobSkillId: s.jobSkillId,
+                skill: s.name,
+                rating: s.rating,
+                comment: s.comment
+            }))
+        };
+
+        try {
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                window.location.href = '/Interviewer/Dashboard';
+            } else {
+                const errData = await response.json();
+                alert('Error: ' + (errData.message || 'Failed to submit feedback.'));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('A network error occurred. Please try again.');
+        }
+    }
+
+    // Initial render on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        renderDynamicSkills();
+    });
 </script>
 }

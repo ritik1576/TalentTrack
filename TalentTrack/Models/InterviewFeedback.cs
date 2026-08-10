@@ -31,8 +31,8 @@ namespace TalentTrack.Models
 
         public string? Comments { get; set; }
 
-        // Hire / Reject / Hold
-        public string Recommendation { get; set; } = "Hold";
+        // Recommended / Not Recommended
+        public string Recommendation { get; set; } = "Recommended";
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -40,5 +40,6 @@ namespace TalentTrack.Models
         public virtual Interview? Interview { get; set; }
         public virtual Candidate? Candidate { get; set; }
         public virtual Interviewer? Interviewer { get; set; }
+        public virtual ICollection<FeedbackSkillRating> SkillRatings { get; set; } = new List<FeedbackSkillRating>();
     }
 }

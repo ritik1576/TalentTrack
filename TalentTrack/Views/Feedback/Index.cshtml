@@ -55,10 +55,13 @@
         <div class="row g-4">
             @foreach (var fb in Model)
             {
-                string recClass = fb.Recommendation == "Hire" ? "success" :
-                                  fb.Recommendation == "Reject" ? "danger" : "warning";
-                string recIcon = fb.Recommendation == "Hire" ? "bi-check-circle-fill" :
-                                 fb.Recommendation == "Reject" ? "bi-x-circle-fill" : "bi-pause-circle-fill";
+                string badgeStyle = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") 
+                    ? "background-color: #E6F4EA !important; color: #137333 !important; border: 1px solid #CEEAD6 !important;" 
+                    : (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") 
+                        ? "background-color: #FCE8E6 !important; color: #C5221F !important; border: 1px solid #FAD2CF !important;" 
+                        : "background-color: #FEF7E0 !important; color: #B06000 !important; border: 1px solid #FEEFC3 !important;";
+                string recIcon = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") ? "bi-check-circle-fill" :
+                                 (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") ? "bi-x-circle-fill" : "bi-pause-circle-fill";
                 int avgScore = (fb.TechnicalScore + fb.CommunicationScore + fb.ProblemSolvingScore) / 3;
 
                 <div class="col-md-6 col-xl-4">
@@ -73,7 +76,7 @@
                                     <div class="fw-bold">@(fb.Candidate?.Name ?? "N/A")</div>
                                     <div class="text-muted small">@(fb.Interview?.Job?.JobTitle ?? "N/A")</div>
                                 </div>
-                                <span class="badge bg-@recClass bg-opacity-10 text-@recClass border border-@recClass border-opacity-25 px-2">
+                                <span class="badge px-2 py-1" style="@badgeStyle">
                                     <i class="bi @recIcon me-1"></i>@fb.Recommendation
                                 </span>
                             </div>

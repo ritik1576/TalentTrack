@@ -2,8 +2,14 @@
 
 @{
     ViewData["Title"] = "Feedback Details";
-    string recClass = Model.Recommendation == "Hire" ? "success" :
-                      Model.Recommendation == "Reject" ? "danger" : "warning";
+    string badgeStyle = (Model.Recommendation == "Hire" || Model.Recommendation == "Recommended" || Model.Recommendation == "Recommend") 
+        ? "background-color: #E6F4EA !important; color: #137333 !important; border: 1px solid #CEEAD6 !important;" 
+        : (Model.Recommendation == "Reject" || Model.Recommendation == "Not Recommended" || Model.Recommendation == "Not Recommend") 
+            ? "background-color: #FCE8E6 !important; color: #C5221F !important; border: 1px solid #FAD2CF !important;" 
+            : "background-color: #FEF7E0 !important; color: #B06000 !important; border: 1px solid #FEEFC3 !important;";
+            
+    string recIcon = (Model.Recommendation == "Hire" || Model.Recommendation == "Recommended" || Model.Recommendation == "Recommend") ? "bi-check-circle-fill" :
+                     (Model.Recommendation == "Reject" || Model.Recommendation == "Not Recommended" || Model.Recommendation == "Not Recommend") ? "bi-x-circle-fill" : "bi-pause-circle-fill";
 }
 
 <div class="container-fluid">
@@ -32,8 +38,8 @@
                             </div>
                         </div>
                         <div class="ms-auto">
-                            <span class="badge bg-@recClass bg-opacity-15 text-@recClass border border-@recClass border-opacity-25 px-3 py-2 fs-6">
-                                @Model.Recommendation
+                            <span class="badge px-3 py-2 fs-6" style="@badgeStyle">
+                                <i class="bi @recIcon me-1"></i>@Model.Recommendation
                             </span>
                         </div>
                     </div>
@@ -50,37 +56,72 @@
                 </div>
             </div>
 
-            <!-- Scores -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-0 py-3 px-4">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Skill Scores</h6>
+            <!-- Dynamic Skills Ratings or Legacy Scores -->
+            @if (Model.SkillRatings != null && Model.SkillRatings.Any())
+            {
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Technical Skill Ratings</h6>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column gap-3">
+                        @foreach (var sr in Model.SkillRatings)
+                        {
+                            <div class="pb-3 border-bottom last-no-border">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-dark">@sr.SkillName</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star-fill @(i <= sr.Rating ? "text-warning" : "text-muted opacity-25")" style="font-size:1.1rem;"></i>
+                                        }
+                                        <span class="ms-2 fw-semibold">@sr.Rating / 5</span>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(sr.Comment))
+                                {
+                                    <p class="text-muted small mb-0 bg-light p-2 rounded-3 border-start border-primary border-3">
+                                        @sr.Comment
+                                    </p>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-4 text-center">
-                            <div class="fw-bold fs-2 text-primary">@Model.TechnicalScore<small class="fs-6 text-muted">/10</small></div>
-                            <div class="text-muted small">Technical Skills</div>
-                            <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                <div class="progress-bar bg-primary" style="width:@(Model.TechnicalScore * 10)%"></div>
+            }
+            else
+            {
+                <!-- Scores -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white border-0 py-3 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Skill Scores (Legacy)</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4 text-center">
+                                <div class="fw-bold fs-2 text-primary">@Model.TechnicalScore<small class="fs-6 text-muted">/10</small></div>
+                                <div class="text-muted small">Technical Skills</div>
+                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
+                                    <div class="progress-bar bg-primary" style="width:@(Model.TechnicalScore * 10)%"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="fw-bold fs-2 text-success">@Model.CommunicationScore<small class="fs-6 text-muted">/10</small></div>
-                            <div class="text-muted small">Communication</div>
-                            <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                <div class="progress-bar bg-success" style="width:@(Model.CommunicationScore * 10)%"></div>
+                            <div class="col-md-4 text-center">
+                                <div class="fw-bold fs-2 text-success">@Model.CommunicationScore<small class="fs-6 text-muted">/10</small></div>
+                                <div class="text-muted small">Communication</div>
+                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
+                                    <div class="progress-bar bg-success" style="width:@(Model.CommunicationScore * 10)%"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="fw-bold fs-2 text-warning">@Model.ProblemSolvingScore<small class="fs-6 text-muted">/10</small></div>
-                            <div class="text-muted small">Problem Solving</div>
-                            <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                <div class="progress-bar bg-warning" style="width:@(Model.ProblemSolvingScore * 10)%"></div>
+                            <div class="col-md-4 text-center">
+                                <div class="fw-bold fs-2 text-warning">@Model.ProblemSolvingScore<small class="fs-6 text-muted">/10</small></div>
+                                <div class="text-muted small">Problem Solving</div>
+                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
+                                    <div class="progress-bar bg-warning" style="width:@(Model.ProblemSolvingScore * 10)%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
 
             <!-- Qualitative -->
             <div class="row g-4 mb-4">
