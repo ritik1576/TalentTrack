@@ -25,6 +25,7 @@ namespace TalentTrack.Data
         public DbSet<CandidateApplication> CandidateApplications { get; set; }
         public DbSet<Screening> Screenings { get; set; }
         public DbSet<ScreeningSkillEvaluation> ScreeningSkillEvaluations { get; set; }
+        public DbSet<FeedbackSkillRating> FeedbackSkillRatings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -202,6 +203,22 @@ namespace TalentTrack.Data
                 .WithMany(s => s.SkillEvaluations)
                 .HasForeignKey(se => se.ScreeningId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // FeedbackSkillRating
+            modelBuilder.Entity<FeedbackSkillRating>()
+                .HasKey(fsr => fsr.FeedbackSkillRatingId);
+
+            modelBuilder.Entity<FeedbackSkillRating>()
+                .HasOne(fsr => fsr.Feedback)
+                .WithMany(f => f.SkillRatings)
+                .HasForeignKey(fsr => fsr.FeedbackId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FeedbackSkillRating>()
+                .HasOne(fsr => fsr.JobSkill)
+                .WithMany()
+                .HasForeignKey(fsr => fsr.JobSkillId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

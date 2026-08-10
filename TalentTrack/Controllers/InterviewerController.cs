@@ -65,7 +65,7 @@ namespace TalentTrack.Controllers
                 .ToList();
 
             var upcomingInterviews = myInterviewsQuery
-                .Where(i => i.InterviewDate > DateTime.Now)
+                .Where(i => i.InterviewDate > DateTime.Now && i.Status != "Completed")
                 .OrderBy(i => i.InterviewDate)
                 .ToList();
 

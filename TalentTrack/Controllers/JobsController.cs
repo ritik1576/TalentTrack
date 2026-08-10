@@ -59,20 +59,8 @@ namespace TalentTrack.Controllers
             _context.Jobs.Add(job);
             _context.SaveChanges();
 
-            // Save per-skill experience requirements
-            if (vm.SkillEntries != null)
-            {
-                foreach (var entry in vm.SkillEntries.Where(s => !string.IsNullOrEmpty(s.SkillName)))
-                {
-                    _context.JobSkills.Add(new JobSkill
-                    {
-                        JobId = job.JobId,
-                        SkillName = entry.SkillName,
-                        RequiredExperience = entry.RequiredExperience
-                    });
-                }
-                _context.SaveChanges();
-            }
+            // Sync job skills from JD and manual inputs
+            SyncJobSkills(job.JobId, job.Description, vm.SkillEntries);
 
             TempData["Success"] = "Job posted successfully!";
             return RedirectToAction("Index");
@@ -110,7 +98,6 @@ namespace TalentTrack.Controllers
             var job = _context.Jobs.Include(j => j.JobSkills).FirstOrDefault(j => j.JobId == vm.JobId);
             if (job == null) return NotFound();
 
-            // Build legacy Skills string
             var skillNames = vm.SkillEntries?.Where(s => !string.IsNullOrEmpty(s.SkillName)).Select(s => s.SkillName).ToList() ?? new List<string>();
 
             job.JobTitle = vm.JobTitle;
@@ -120,25 +107,128 @@ namespace TalentTrack.Controllers
             job.Location = vm.Location;
             job.Status = vm.Status;
 
-            // Remove old skills and add updated ones
-            _context.JobSkills.RemoveRange(job.JobSkills);
+            _context.Jobs.Update(job);
+            _context.SaveChanges();
 
-            if (vm.SkillEntries != null)
+            // Sync job skills from JD and manual inputs
+            SyncJobSkills(job.JobId, job.Description, vm.SkillEntries);
+
+            TempData["Success"] = "Job updated successfully!";
+            return RedirectToAction("Index");
+        }
+
+        private List<string> ExtractSkillsFromDescription(string description)
+        {
+            if (string.IsNullOrEmpty(description)) return new List<string>();
+
+            var commonSkills = new List<string>
             {
-                foreach (var entry in vm.SkillEntries.Where(s => !string.IsNullOrEmpty(s.SkillName)))
+                "Java", "Spring Boot", "Spring", "AWS", "SQL", "Docker", "Kubernetes", "Python", 
+                "Django", "Flask", "React", "Angular", "Vue", "JavaScript", "TypeScript", "Node.js", 
+                "Express", "C#", ".NET", "ASP.NET", "Azure", "GCP", "HTML", "CSS", "Git", "GitHub", 
+                "CI/CD", "Jenkins", "PostgreSQL", "MySQL", "MongoDB", "Redis", "C++", "Go", "Rust", 
+                "PHP", "Laravel"
+            };
+
+            var extracted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
+            foreach (var skill in commonSkills)
+            {
+                string pattern = $@"\b{System.Text.RegularExpressions.Regex.Escape(skill)}\b";
+                if (System.Text.RegularExpressions.Regex.IsMatch(description, pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                 {
-                    _context.JobSkills.Add(new JobSkill
-                    {
-                        JobId = job.JobId,
-                        SkillName = entry.SkillName,
-                        RequiredExperience = entry.RequiredExperience
-                    });
+                    extracted.Add(skill);
                 }
             }
 
+            return extracted.ToList();
+        }
+
+        private void SyncJobSkills(int jobId, string description, List<JobSkillInput> manualSkills)
+        {
+            var existingSkills = _context.JobSkills.Where(js => js.JobId == jobId).ToList();
+            var extractedSkillNames = ExtractSkillsFromDescription(description);
+
+            var newSkills = new List<JobSkill>();
+            var manualSkillNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (manualSkills != null)
+            {
+                foreach (var entry in manualSkills.Where(s => !string.IsNullOrEmpty(s.SkillName)))
+                {
+                    if (manualSkillNames.Add(entry.SkillName))
+                    {
+                        var existing = existingSkills.FirstOrDefault(es => es.SkillName.Equals(entry.SkillName, StringComparison.OrdinalIgnoreCase));
+                        if (existing != null)
+                        {
+                            existing.RequiredExperience = entry.RequiredExperience;
+                            existing.Source = "manual";
+                            existing.UpdatedAt = DateTime.Now;
+                            _context.JobSkills.Update(existing);
+                        }
+                        else
+                        {
+                            newSkills.Add(new JobSkill
+                            {
+                                JobId = jobId,
+                                SkillName = entry.SkillName,
+                                RequiredExperience = entry.RequiredExperience,
+                                Source = "manual",
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            });
+                        }
+                    }
+                }
+            }
+
+            foreach (var skillName in extractedSkillNames)
+            {
+                if (!manualSkillNames.Contains(skillName))
+                {
+                    var existing = existingSkills.FirstOrDefault(es => es.SkillName.Equals(skillName, StringComparison.OrdinalIgnoreCase));
+                    if (existing != null)
+                    {
+                        existing.Source = "jd_extracted";
+                        existing.UpdatedAt = DateTime.Now;
+                        _context.JobSkills.Update(existing);
+                    }
+                    else
+                    {
+                        newSkills.Add(new JobSkill
+                        {
+                            JobId = jobId,
+                            SkillName = skillName,
+                            RequiredExperience = 1,
+                            Source = "jd_extracted",
+                            CreatedAt = DateTime.Now,
+                            UpdatedAt = DateTime.Now
+                        });
+                    }
+                }
+            }
+
+            if (newSkills.Any())
+            {
+                _context.JobSkills.AddRange(newSkills);
+            }
+
+            var allValidNames = new HashSet<string>(extractedSkillNames, StringComparer.OrdinalIgnoreCase);
+            if (manualSkills != null)
+            {
+                foreach (var s in manualSkills.Where(x => !string.IsNullOrEmpty(x.SkillName)))
+                {
+                    allValidNames.Add(s.SkillName);
+                }
+            }
+
+            var toRemove = existingSkills.Where(es => !allValidNames.Contains(es.SkillName)).ToList();
+            if (toRemove.Any())
+            {
+                _context.JobSkills.RemoveRange(toRemove);
+            }
+
             _context.SaveChanges();
-            TempData["Success"] = "Job updated successfully!";
-            return RedirectToAction("Index");
         }
 
         // Delete Job
