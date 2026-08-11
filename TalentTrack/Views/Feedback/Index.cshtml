@@ -53,97 +53,115 @@
     else
     {
         <div class="row g-4">
-            @foreach (var fb in Model)
+            @foreach (var candidateGroup in Model.GroupBy(f => f.CandidateId))
             {
-                string badgeStyle = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") 
-                    ? "background-color: #E6F4EA !important; color: #137333 !important; border: 1px solid #CEEAD6 !important;" 
-                    : (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") 
-                        ? "background-color: #FCE8E6 !important; color: #C5221F !important; border: 1px solid #FAD2CF !important;" 
-                        : "background-color: #FEF7E0 !important; color: #B06000 !important; border: 1px solid #FEEFC3 !important;";
-                string recIcon = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") ? "bi-check-circle-fill" :
-                                 (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") ? "bi-x-circle-fill" : "bi-pause-circle-fill";
-                int avgScore = (fb.TechnicalScore + fb.CommunicationScore + fb.ProblemSolvingScore) / 3;
-
+                var firstFb = candidateGroup.First();
                 <div class="col-md-6 col-xl-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4">
                             <!-- Candidate Header -->
                             <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="tt-avatar" style="width:48px;height:48px;font-size:1.1rem;">
-                                    @(fb.Candidate?.Name?.Substring(0,1).ToUpper() ?? "?")
+                                <div class="tt-avatar" style="width:48px;height:48px;font-size:1.1rem;background-color:#E8F0FE;color:#1A73E8;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">
+                                    @(firstFb.Candidate?.Name?.Substring(0,1).ToUpper() ?? "?")
                                 </div>
                                 <div class="flex-grow-1">
-                                    <div class="fw-bold">@(fb.Candidate?.Name ?? "N/A")</div>
-                                    <div class="text-muted small">@(fb.Interview?.Job?.JobTitle ?? "N/A")</div>
+                                    <div class="fw-bold fs-5">@(firstFb.Candidate?.Name ?? "N/A")</div>
+                                    <div class="text-muted small">@(firstFb.Interview?.Job?.JobTitle ?? "N/A")</div>
                                 </div>
-                                <span class="badge px-2 py-1" style="@badgeStyle">
-                                    <i class="bi @recIcon me-1"></i>@fb.Recommendation
-                                </span>
                             </div>
 
-                            <!-- Star Rating -->
-                            <div class="d-flex align-items-center gap-1 mb-3">
-                                @for (int i = 1; i <= 5; i++)
+                            <hr class="my-3 opacity-10" />
+
+                            <!-- Feedbacks List -->
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var fb in candidateGroup)
                                 {
-                                    if (i <= fb.OverallRating)
-                                    {
-                                        <i class="bi bi-star-fill tt-star-display"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-star tt-star-display empty"></i>
-                                    }
+                                    string badgeStyle = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") 
+                                        ? "background-color: #E6F4EA !important; color: #137333 !important; border: 1px solid #CEEAD6 !important;" 
+                                        : (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") 
+                                            ? "background-color: #FCE8E6 !important; color: #C5221F !important; border: 1px solid #FAD2CF !important;" 
+                                            : "background-color: #FEF7E0 !important; color: #B06000 !important; border: 1px solid #FEEFC3 !important;";
+                                    string recIcon = (fb.Recommendation == "Hire" || fb.Recommendation == "Recommended" || fb.Recommendation == "Recommend") ? "bi-check-circle-fill" :
+                                                     (fb.Recommendation == "Reject" || fb.Recommendation == "Not Recommended" || fb.Recommendation == "Not Recommend") ? "bi-x-circle-fill" : "bi-pause-circle-fill";
+
+                                    <div class="p-3 border rounded-3 bg-white shadow-xs">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <span class="fw-semibold text-dark text-sm"><i class="bi bi-person me-1"></i>@(fb.Interviewer?.Name ?? "N/A")</span>
+                                                <div class="text-muted extra-small" style="font-size:0.75rem;"><i class="bi bi-calendar3 me-1"></i>@fb.CreatedAt.ToString("dd MMM yyyy")</div>
+                                            </div>
+                                            <span class="badge px-2 py-1" style="@badgeStyle; font-size:0.75rem;">
+                                                <i class="bi @recIcon me-1"></i>@fb.Recommendation
+                                            </span>
+                                        </div>
+
+                                        <!-- Star Rating -->
+                                        <div class="d-flex align-items-center gap-1 mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= fb.OverallRating)
+                                                {
+                                                    <i class="bi bi-star-fill text-warning" style="font-size:0.85rem;"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star text-muted opacity-25" style="font-size:0.85rem;"></i>
+                                                }
+                                            }
+                                            <span class="ms-1 text-muted small" style="font-size:0.8rem;">@fb.OverallRating/5</span>
+                                        </div>
+
+                                        <!-- Score Bars -->
+                                        <div class="mb-2">
+                                            <div class="row g-2">
+                                                <div class="col-4">
+                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                        <span class="text-muted">Tech</span>
+                                                        <span class="fw-bold">@fb.TechnicalScore/10</span>
+                                                    </div>
+                                                    <div class="progress" style="height:4px;border-radius:2px;">
+                                                        <div class="progress-bar bg-primary" style="width:@(fb.TechnicalScore * 10)%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                        <span class="text-muted">Comm</span>
+                                                        <span class="fw-bold">@fb.CommunicationScore/10</span>
+                                                    </div>
+                                                    <div class="progress" style="height:4px;border-radius:2px;">
+                                                        <div class="progress-bar bg-success" style="width:@(fb.CommunicationScore * 10)%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                        <span class="text-muted">Problem</span>
+                                                        <span class="fw-bold">@fb.ProblemSolvingScore/10</span>
+                                                    </div>
+                                                    <div class="progress" style="height:4px;border-radius:2px;">
+                                                        <div class="progress-bar bg-warning" style="width:@(fb.ProblemSolvingScore * 10)%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Comments Preview -->
+                                        @if (!string.IsNullOrEmpty(fb.Comments))
+                                        {
+                                            <div class="bg-light rounded-2 p-2 mb-2">
+                                                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-quote me-1"></i>
+                                                    @fb.Comments
+                                                </small>
+                                            </div>
+                                        }
+
+                                        <div class="text-end">
+                                            <a asp-action="Details" asp-route-id="@fb.FeedbackId" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:0.75rem;">
+                                                <i class="bi bi-eye me-1"></i>Details
+                                            </a>
+                                        </div>
+                                    </div>
                                 }
-                                <span class="ms-1 text-muted small">@fb.OverallRating/5</span>
-                            </div>
-
-                            <!-- Score Bars -->
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Technical</small>
-                                    <small class="fw-bold">@fb.TechnicalScore/10</small>
-                                </div>
-                                <div class="progress" style="height:5px;border-radius:3px;">
-                                    <div class="progress-bar bg-primary" style="width:@(fb.TechnicalScore * 10)%"></div>
-                                </div>
-
-                                <div class="d-flex justify-content-between mb-1 mt-2">
-                                    <small class="text-muted">Communication</small>
-                                    <small class="fw-bold">@fb.CommunicationScore/10</small>
-                                </div>
-                                <div class="progress" style="height:5px;border-radius:3px;">
-                                    <div class="progress-bar bg-success" style="width:@(fb.CommunicationScore * 10)%"></div>
-                                </div>
-
-                                <div class="d-flex justify-content-between mb-1 mt-2">
-                                    <small class="text-muted">Problem Solving</small>
-                                    <small class="fw-bold">@fb.ProblemSolvingScore/10</small>
-                                </div>
-                                <div class="progress" style="height:5px;border-radius:3px;">
-                                    <div class="progress-bar bg-warning" style="width:@(fb.ProblemSolvingScore * 10)%"></div>
-                                </div>
-                            </div>
-
-                            <!-- Comments Preview -->
-                            @if (!string.IsNullOrEmpty(fb.Comments))
-                            {
-                                <div class="bg-light rounded-3 p-2 mb-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-quote me-1"></i>
-                                        @(fb.Comments.Length > 80 ? fb.Comments.Substring(0, 80) + "..." : fb.Comments)
-                                    </small>
-                                </div>
-                            }
-
-                            <!-- Footer -->
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                <div>
-                                    <div class="text-muted small"><i class="bi bi-person me-1"></i>@(fb.Interviewer?.Name ?? "N/A")</div>
-                                    <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i>@fb.CreatedAt.ToString("dd MMM yyyy")</div>
-                                </div>
-                                <a asp-action="Details" asp-route-id="@fb.FeedbackId" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i>Details
-                                </a>
                             </div>
                         </div>
                     </div>
