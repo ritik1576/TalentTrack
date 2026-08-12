@@ -18,6 +18,7 @@ namespace TalentTrack.Data
         public DbSet<Recruiter> Recruiters { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<InterviewParticipant> InterviewParticipants { get; set; }
+        public DbSet<CandidateDocument> CandidateDocuments { get; set; }
 
         // Phase 2: Screening Workflow
         public DbSet<JobSkill> JobSkills { get; set; }
@@ -219,6 +220,12 @@ namespace TalentTrack.Data
                 .WithMany()
                 .HasForeignKey(fsr => fsr.JobSkillId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<CandidateDocument>()
+                .HasOne(cd => cd.Candidate)
+                .WithMany()
+                .HasForeignKey(cd => cd.CandidateId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

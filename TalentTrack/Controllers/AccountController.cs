@@ -96,6 +96,24 @@ namespace TalentTrack.Controllers
                 return RedirectToAction("Dashboard", "Interviewer");
             }
 
+            // Check Candidates table
+            var candidate = _context.Candidates
+                .FirstOrDefault(c => c.Email.ToLower() == email);
+            if (candidate != null)
+            {
+                var phoneDigits = new string((candidate.Phone ?? "").Where(char.IsDigit).ToArray());
+                var passwordDigits = new string(password.Where(char.IsDigit).ToArray());
+                if ((!string.IsNullOrEmpty(phoneDigits) && phoneDigits == passwordDigits) || candidate.Phone == password)
+                {
+                    HttpContext.Session.SetString("UserRole", "Candidate");
+                    HttpContext.Session.SetString("UserName", candidate.Name ?? "Candidate");
+                    HttpContext.Session.SetString("UserEmail", candidate.Email ?? "");
+                    HttpContext.Session.SetString("UserId", candidate.CandidateId.ToString());
+                    HttpContext.Session.SetString("UserInitials", candidate.Name?.Length >= 2 ? candidate.Name.Substring(0, 2).ToUpper() : "C");
+                    return RedirectToAction("Portal", "CandidateDocument");
+                }
+            }
+
             ViewBag.Error = "Invalid credentials or account not found. If you are new, please Sign Up first for Admin Approval.";
             return View();
         }
