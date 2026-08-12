@@ -62,6 +62,10 @@ else
                         {
                             <span class="tt-role-badge-interviewer"><i class="bi bi-person-check me-1"></i>Interviewer</span>
                         }
+                        else if (userRole == "Candidate")
+                        {
+                            <span class="badge bg-success px-3 py-1"><i class="bi bi-person-badge me-1"></i>Candidate</span>
+                        }
                     </div>
 
                     <div class="text-uppercase text-secondary fw-bold mb-2 px-2" style="font-size: 0.7rem; letter-spacing: 1px;">Navigation</div>
@@ -152,10 +156,18 @@ else
                                 <span>My Dashboard</span>
                             </a>
 
-                            <a class="tt-nav-link @(currentController == "Feedback" ? "active" : "")"
+                             <a class="tt-nav-link @(currentController == "Feedback" ? "active" : "")"
                                asp-controller="Feedback" asp-action="Index">
                                 <i class="bi bi-star-fill"></i>
                                 <span>Feedback Given</span>
+                            </a>
+                        }
+                        else if (userRole == "Candidate")
+                        {
+                            <a class="tt-nav-link @(currentController == "CandidateDocument" && currentAction == "Portal" ? "active" : "")"
+                               asp-controller="CandidateDocument" asp-action="Portal">
+                                <i class="bi bi-file-earmark-arrow-up-fill text-success"></i>
+                                <span>My Documents</span>
                             </a>
                         }
                     </nav>
@@ -186,11 +198,14 @@ else
                             <span>Settings</span>
                         </a>
 
-                        <a class="tt-nav-link @(currentController == "Help" ? "active" : "")"
-                           asp-controller="Help" asp-action="Index">
-                            <i class="bi bi-question-circle-fill"></i>
-                            <span>Help &amp; Support</span>
-                        </a>
+                        @if (userRole != "Candidate")
+                        {
+                            <a class="tt-nav-link @(currentController == "Help" ? "active" : "")"
+                               asp-controller="Help" asp-action="Index">
+                                <i class="bi bi-question-circle-fill"></i>
+                                <span>Help &amp; Support</span>
+                            </a>
+                        }
 
                         <a class="tt-nav-link text-danger opacity-90"
                            asp-controller="Account" asp-action="Logout">
