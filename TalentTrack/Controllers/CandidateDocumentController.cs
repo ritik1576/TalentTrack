@@ -56,6 +56,7 @@ namespace TalentTrack.Controllers
             ViewBag.Candidate = candidate;
             ViewBag.UploadedDocuments = dbDocs;
             ViewBag.RequiredTypes = requiredTypes;
+            ViewBag.IsShortlisted = await IsCandidateShortlisted(candidateId);
 
             return View();
         }
@@ -81,6 +82,12 @@ namespace TalentTrack.Controllers
             if (candidate == null)
             {
                 return NotFound("Candidate not found.");
+            }
+
+            // Check if candidate is shortlisted/selected
+            if (!await IsCandidateShortlisted(candidateId))
+            {
+                return Forbid();
             }
 
             var requiredTypes = new List<string> { "ID Proof", "Address Proof", "Education Certificate", "Experience Letter" };
@@ -203,6 +210,11 @@ namespace TalentTrack.Controllers
                 {
                     return Forbid();
                 }
+
+                if (!await IsCandidateShortlisted(candidateId))
+                {
+                    return Forbid();
+                }
             }
 
             var filePath = Path.Combine(_environment.WebRootPath, doc.FilePath.TrimStart('/'));
@@ -218,6 +230,170 @@ namespace TalentTrack.Controllers
             else if (ext == ".png") contentType = "image/png";
 
             return PhysicalFile(filePath, contentType, doc.FileName);
+        }
+
+        // GET: /CandidateDocument/Shortlisted
+        [HttpGet]
+        public async Task<IActionResult> Shortlisted()
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var shortlistedApplications = await _context.CandidateApplications
+                .Include(ca => ca.Candidate)
+                .Include(ca => ca.Job)
+                .Where(ca => !string.IsNullOrEmpty(ca.BackgroundVerificationStatus) && ca.BackgroundVerificationStatus != "Rejected")
+                .ToListAsync();
+
+            return View(shortlistedApplications);
+        }
+
+        // POST: /CandidateDocument/ShortlistCandidate
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ShortlistCandidate(int applicationId)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return Challenge();
+            }
+
+            var application = await _context.CandidateApplications.FindAsync(applicationId);
+            if (application == null)
+            {
+                return NotFound("Application not found.");
+            }
+
+            application.BackgroundVerificationStatus = "Pending";
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Candidate successfully shortlisted for document verification.";
+            return RedirectToAction(nameof(Shortlisted));
+        }
+
+        // GET: /CandidateDocument/Verify/5
+        [HttpGet]
+        public async Task<IActionResult> Verify(int id)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var application = await _context.CandidateApplications
+                .Include(ca => ca.Candidate)
+                .Include(ca => ca.Job)
+                .FirstOrDefaultAsync(ca => ca.ApplicationId == id);
+
+            if (application == null)
+            {
+                return NotFound("Application not found.");
+            }
+
+            var candidate = application.Candidate;
+            if (candidate == null)
+            {
+                return NotFound("Candidate not found.");
+            }
+
+            // Retrieve all documents for this candidate
+            var dbDocs = await _context.CandidateDocuments
+                .Where(d => d.CandidateId == candidate.CandidateId)
+                .ToListAsync();
+
+            var requiredTypes = new List<string> { "ID Proof", "Address Proof", "Education Certificate", "Experience Letter" };
+
+            if (string.IsNullOrEmpty(application.BackgroundVerificationStatus))
+            {
+                application.BackgroundVerificationStatus = "Pending";
+            }
+
+            ViewBag.Application = application;
+            ViewBag.Candidate = candidate;
+            ViewBag.UploadedDocuments = dbDocs;
+            ViewBag.RequiredTypes = requiredTypes;
+
+            return View();
+        }
+
+        // POST: /CandidateDocument/UpdateVerificationStatus
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateVerificationStatus(int applicationId, string status)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return Forbid();
+            }
+
+            var allowedStatuses = new List<string> { "Pending", "In Review", "Verified", "Rejected" };
+            if (!allowedStatuses.Contains(status))
+            {
+                return BadRequest("Invalid status value.");
+            }
+
+            var application = await _context.CandidateApplications.FindAsync(applicationId);
+            if (application == null)
+            {
+                return NotFound("Application not found.");
+            }
+
+            application.BackgroundVerificationStatus = status;
+            _context.CandidateApplications.Update(application);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Background Verification status updated successfully.";
+
+            return RedirectToAction(nameof(Verify), new { id = applicationId });
+        }
+
+        // GET: /CandidateDocument/VerifyDownload
+        [HttpGet]
+        public async Task<IActionResult> VerifyDownload(int documentId, int candidateId)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return Forbid();
+            }
+
+            var doc = await _context.CandidateDocuments.FindAsync(documentId);
+            if (doc == null)
+            {
+                return NotFound("Document not found.");
+            }
+
+            // Security check: Verify the document belongs to the requested candidate
+            if (doc.CandidateId != candidateId)
+            {
+                return Forbid();
+            }
+
+            var filePath = Path.Combine(_environment.WebRootPath, doc.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Physical file not found on server.");
+            }
+
+            var contentType = "application/octet-stream";
+            var ext = Path.GetExtension(filePath).ToLower();
+            if (ext == ".pdf") contentType = "application/pdf";
+            else if (ext == ".jpg" || ext == ".jpeg") contentType = "image/jpeg";
+            else if (ext == ".png") contentType = "image/png";
+
+            return PhysicalFile(filePath, contentType, doc.FileName);
+        }
+
+        private async Task<bool> IsCandidateShortlisted(int candidateId)
+        {
+            return await _context.CandidateApplications
+                .AnyAsync(ca => ca.CandidateId == candidateId && (ca.Status == "Screened" || ca.Status == "Interview"));
         }
     }
 }

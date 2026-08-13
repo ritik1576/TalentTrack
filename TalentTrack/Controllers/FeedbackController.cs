@@ -38,6 +38,10 @@ namespace TalentTrack.Controllers
             }
 
             var feedbacks = query.OrderByDescending(f => f.CreatedAt).ToList();
+
+            var applications = _context.CandidateApplications.ToList();
+            ViewBag.Applications = applications;
+
             return View(feedbacks);
         }
 
@@ -159,6 +163,94 @@ namespace TalentTrack.Controllers
             if (feedback == null) return NotFound();
 
             return View(feedback);
+        }
+
+        // POST: /Feedback/ProcessApplication
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcessApplication(int applicationId, string decision)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Recruiter" && role != "Admin")
+            {
+                return Challenge();
+            }
+
+            var application = await _context.CandidateApplications
+                .Include(ca => ca.Candidate)
+                .FirstOrDefaultAsync(ca => ca.ApplicationId == applicationId);
+
+            if (application == null)
+            {
+                return NotFound("Application not found.");
+            }
+
+            if (decision == "Accept")
+            {
+                application.BackgroundVerificationStatus = "Pending";
+                _context.CandidateApplications.Update(application);
+
+                var candidate = application.Candidate;
+                if (candidate != null)
+                {
+                    string emailBody = $@"
+============================================================
+SIMULATED EMAIL SENT
+Date: {DateTime.Now:dd MMM yyyy, hh:mm tt}
+To: {candidate.Email}
+Subject: Onboarding Document Verification Portal Enabled
+Body:
+Dear {candidate.Name},
+
+Congratulations! You have been shortlisted for onboarding at TalentTrack.
+Your document verification portal is now active. Please log in to your dashboard and upload the required onboarding verification documents:
+- ID Proof
+- Address Proof
+- Education Certificate
+- Experience Letter
+
+Please note:
+- Your registered Contact Number ({candidate.Phone}) is your login password.
+- You can upload your documents through the dashboard.
+- You can change your password by clicking 'Forgot Password' on the login screen.
+
+Best regards,
+Recruitment Team
+TalentTrack
+============================================================
+";
+                    var emailLogPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "simulated_emails.txt");
+                    var emailDirectory = Path.GetDirectoryName(emailLogPath);
+                    if (!string.IsNullOrEmpty(emailDirectory) && !Directory.Exists(emailDirectory))
+                    {
+                        Directory.CreateDirectory(emailDirectory);
+                    }
+                    await System.IO.File.AppendAllTextAsync(emailLogPath, emailBody);
+
+                    _context.Notifications.Add(new Notification
+                    {
+                        TargetRole = "Candidate",
+                        TargetUserEmail = candidate.Email,
+                        Title = "Shortlisted for Onboarding!",
+                        Message = "Congratulations! Your document verification portal has been enabled. Please log in and upload your documents.",
+                        CreatedAt = DateTime.Now,
+                        TargetUrl = "/CandidateDocument/Portal"
+                    });
+                }
+
+                TempData["Success"] = "Candidate accepted successfully. Email sent and Document Portal enabled!";
+            }
+            else if (decision == "Reject")
+            {
+                application.BackgroundVerificationStatus = "Rejected";
+                application.Status = "Rejected";
+                _context.CandidateApplications.Update(application);
+
+                TempData["Warning"] = "Candidate rejected successfully. Application status set to Rejected.";
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

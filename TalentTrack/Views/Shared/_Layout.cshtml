@@ -109,6 +109,11 @@ else
                                 <i class="bi bi-star-fill"></i>
                                 <span>Feedback</span>
                             </a>
+                            <a class="tt-nav-link @(currentController == "CandidateDocument" && (currentAction == "Shortlisted" || currentAction == "Verify") ? "active" : "")"
+                               asp-controller="CandidateDocument" asp-action="Shortlisted">
+                                <i class="bi bi-shield-check-fill"></i>
+                                <span>Verification Portal</span>
+                            </a>
                         }
                         else if (userRole == "Recruiter")
                         {
@@ -146,6 +151,11 @@ else
                                asp-controller="Feedback" asp-action="Index">
                                 <i class="bi bi-star-fill"></i>
                                 <span>Feedback</span>
+                            </a>
+                            <a class="tt-nav-link @(currentController == "CandidateDocument" && (currentAction == "Shortlisted" || currentAction == "Verify") ? "active" : "")"
+                               asp-controller="CandidateDocument" asp-action="Shortlisted">
+                                <i class="bi bi-shield-check-fill"></i>
+                                <span>Verification Portal</span>
                             </a>
                         }
                         else if (userRole == "Interviewer")

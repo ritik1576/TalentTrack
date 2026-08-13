@@ -1,0 +1,139 @@
+@using TalentTrack.Models
+@{
+    ViewData["Title"] = "Verify Candidate Documents";
+    var application = ViewBag.Application as CandidateApplication;
+    var candidate = ViewBag.Candidate as Candidate;
+    var dbDocs = ViewBag.UploadedDocuments as List<CandidateDocument> ?? new List<CandidateDocument>();
+    var requiredTypes = ViewBag.RequiredTypes as List<string> ?? new List<string>();
+}
+
+<div class="mb-3">
+    <a asp-action="Shortlisted" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span>Back to Shortlisted Candidates</span>
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+        <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+        <div class="fw-medium">@TempData["SuccessMessage"]</div>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Candidate Info & Document List -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4 p-4 mb-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 60px; height: 60px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); font-size: 1.5rem;">
+                    @(string.IsNullOrEmpty(candidate?.Name) ? "?" : candidate.Name.Substring(0, 1).ToUpper())
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">@candidate?.Name</h3>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-briefcase me-1"></i>Applied Position: <strong>@application?.Job?.JobTitle</strong>
+                    </p>
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-4">Verification Documents</h5>
+            <div class="row g-3">
+                @foreach (var type in requiredTypes)
+                {
+                    var doc = dbDocs.FirstOrDefault(d => d.DocumentType == type);
+                    bool isUploaded = doc != null;
+                    
+                    <div class="col-md-6">
+                        <div class="card border border-light-subtle shadow-sm rounded-4 h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">
+                                    <i class="bi bi-file-earmark-arrow-up text-primary me-1"></i>@type
+                                </span>
+                                @if (isUploaded)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Uploaded
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Not Uploaded
+                                    </span>
+                                }
+                            </div>
+                            
+                            <div class="bg-light rounded-3 p-3 mb-3 flex-grow-1 d-flex flex-column justify-content-center">
+                                @if (isUploaded && doc != null)
+                                {
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
+                                        <div class="text-truncate" style="font-size: 0.85rem;">
+                                            <div class="fw-semibold text-dark text-truncate" title="@doc.FileName">@doc.FileName</div>
+                                            <div class="text-muted small">Uploaded: @doc.CreatedAt.ToString("dd MMM yyyy")</div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-2 text-muted small">
+                                        <i class="bi bi-cloud-slash fs-4 d-block mb-1 opacity-50"></i>
+                                        Pending candidate upload
+                                    </div>
+                                }
+                            </div>
+                            
+                            <div class="mt-auto text-end">
+                                @if (isUploaded && doc != null)
+                                {
+                                    <a asp-action="VerifyDownload" asp-route-documentId="@doc.DocumentId" asp-route-candidateId="@candidate?.CandidateId" target="_blank" class="btn btn-sm btn-primary w-100 py-2 rounded-3 fw-medium">
+                                        <i class="bi bi-eye-fill me-1"></i>View Document
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary w-100 py-2 rounded-3" disabled>
+                                        <i class="bi bi-eye-slash-fill me-1"></i>View Document
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Status Update Card -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h5 class="fw-bold mb-3">Verification Action</h5>
+            <form asp-action="UpdateVerificationStatus" method="post">
+                <input type="hidden" name="applicationId" value="@application?.ApplicationId" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-secondary">Background Verification Status</label>
+                    <select name="status" class="form-select rounded-3 border-secondary border-opacity-25 py-2">
+                        @foreach (var status in new[] { "Pending", "In Review", "Verified", "Rejected" })
+                        {
+                            if (application?.BackgroundVerificationStatus == status)
+                            {
+                                <option value="@status" selected="selected">@status</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-bold">
+                    <i class="bi bi-save me-1"></i> Save Verification Status
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
