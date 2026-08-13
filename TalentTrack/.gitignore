@@ -1,0 +1,11 @@
+# Ignore uploaded files in wwwroot/uploads
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
+!wwwroot/uploads/resumes/
+!wwwroot/uploads/documents/
+
+wwwroot/uploads/resumes/*
+!wwwroot/uploads/resumes/.gitkeep
+
+wwwroot/uploads/documents/*
+!wwwroot/uploads/documents/.gitkeep
