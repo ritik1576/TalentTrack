@@ -1,0 +1,74 @@
+@model TalentTrack.Models.CandidateApplication
+
+@{
+    ViewData["Title"] = "Generate Offer Letter";
+}
+
+<div class="mb-3">
+    <a asp-action="Shortlisted" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
+        <i class="bi bi-arrow-left fs-5"></i>
+        <span>Back to Pipeline</span>
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h3 class="fw-bold mb-1 text-dark">
+                <i class="bi bi-file-earmark-plus-fill text-primary me-2"></i>Generate Offer Letter
+            </h3>
+            <p class="text-muted mb-4">Provide the onboarding details for the selected candidate to generate the offer letter PDF.</p>
+
+            <form asp-action="GenerateOffer" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="applicationId" value="@Model.ApplicationId" />
+
+                <div class="bg-light rounded-4 p-4 mb-4 border border-light-subtle">
+                    <h6 class="fw-bold text-secondary mb-3">Candidate & Job Details</h6>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label text-muted mb-1 small">Candidate Name</label>
+                            <div class="fw-bold text-dark">@(Model.Candidate?.Name ?? "N/A")</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-muted mb-1 small">Registered Email</label>
+                            <div class="fw-medium text-dark">@(Model.Candidate?.Email ?? "N/A")</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-muted mb-1 small">Position Applied</label>
+                            <div class="fw-bold text-primary">@(Model.Job?.JobTitle ?? "N/A")</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-muted mb-1 small">Verification Status</label>
+                            <div>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                    <i class="bi bi-patch-check-fill me-1"></i>Verified
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="joiningDate" class="form-label fw-bold text-dark">
+                        <i class="bi bi-calendar-event text-muted me-1"></i>Joining Date
+                    </label>
+                    <input type="date" id="joiningDate" name="joiningDate" class="form-control form-control-lg rounded-3 border-secondary border-opacity-25" required />
+                    <span class="text-danger small"></span>
+                    <div class="form-text text-muted small mt-2">
+                        <i class="bi bi-info-circle-fill me-1"></i>Select the candidate's first day of employment. This date will be printed on the PDF and emailed to them.
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 justify-content-end">
+                    <a asp-action="Shortlisted" class="btn btn-outline-secondary px-4 py-2 rounded-3 fw-semibold">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 fw-bold shadow-xs">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Generate Offer Letter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
