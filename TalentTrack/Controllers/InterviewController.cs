@@ -71,12 +71,7 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
 
-            var screenedCandidates = _context.CandidateApplications
-                .Where(ca => ca.Status == "Screened" || ca.Status == "Pending")
-                .Include(ca => ca.Candidate)
-                .Select(ca => ca.Candidate)
-                .Distinct()
-                .ToList();
+            var screenedCandidates = GetEligibleCandidatesForInterview();
 
             ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name");
 
@@ -159,12 +154,7 @@ namespace TalentTrack.Controllers
             }
 
             // Reload ViewBags if validation failed
-            var screenedCandidates = _context.CandidateApplications
-                .Where(ca => ca.Status == "Screened" || ca.Status == "Pending")
-                .Include(ca => ca.Candidate)
-                .Select(ca => ca.Candidate)
-                .Distinct()
-                .ToList();
+            var screenedCandidates = GetEligibleCandidatesForInterview();
 
             ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
 
@@ -199,12 +189,7 @@ namespace TalentTrack.Controllers
                 return NotFound();
             }
 
-            var screenedCandidates = _context.CandidateApplications
-                .Where(ca => ca.Status == "Screened" || ca.Status == "Pending")
-                .Include(ca => ca.Candidate)
-                .Select(ca => ca.Candidate)
-                .Distinct()
-                .ToList();
+            var screenedCandidates = GetEligibleCandidatesForInterview();
 
             ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
 
@@ -331,12 +316,7 @@ namespace TalentTrack.Controllers
             }
 
             // Reload select lists if validation fails
-            var screenedCandidates = _context.CandidateApplications
-                .Where(ca => ca.Status == "Screened")
-                .Include(ca => ca.Candidate)
-                .Select(ca => ca.Candidate)
-                .Distinct()
-                .ToList();
+            var screenedCandidates = GetEligibleCandidatesForInterview();
 
             ViewBag.Candidates = new SelectList(screenedCandidates, "CandidateId", "Name", interview.CandidateId);
 
@@ -424,12 +404,53 @@ namespace TalentTrack.Controllers
             }
             else
             {
-                var hasScreening = _context.Screenings
-                    .Include(s => s.Application)
-                    .Any(s => s.Application != null && s.Application.CandidateId == interview.CandidateId && s.Status == "Completed");
-                if (!hasScreening)
+                var app = _context.CandidateApplications
+                    .Include(ca => ca.Job)
+                        .ThenInclude(j => j!.JobSkills)
+                    .Where(ca => ca.CandidateId == interview.CandidateId)
+                    .OrderByDescending(ca => ca.AppliedDate)
+                    .FirstOrDefault();
+
+                if (app == null)
+                {
+                    ModelState.AddModelError("CandidateId", "Candidate application not found.");
+                    return;
+                }
+
+                var screening = _context.Screenings
+                    .Where(s => s.ApplicationId == app.ApplicationId && s.Status == "Completed")
+                    .OrderByDescending(s => s.ScreeningDate)
+                    .FirstOrDefault();
+
+                if (screening == null)
                 {
                     ModelState.AddModelError("CandidateId", "Interview scheduling is not allowed until Screening is completed.");
+                }
+                else
+                {
+                    // Check skills match
+                    bool skillsMatch = true;
+                    if (app.Job != null && app.Job.JobSkills != null)
+                    {
+                        var evaluations = _context.ScreeningSkillEvaluations
+                            .Where(sse => sse.ScreeningId == screening.ScreeningId)
+                            .ToList();
+
+                        foreach (var requiredSkill in app.Job.JobSkills)
+                        {
+                            var matchingEval = evaluations.FirstOrDefault(e => e.SkillName.Trim().ToLower() == requiredSkill.SkillName.Trim().ToLower());
+                            if (matchingEval == null || !matchingEval.HasSkill || matchingEval.ExperienceYears < requiredSkill.RequiredExperience)
+                            {
+                                skillsMatch = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!skillsMatch)
+                    {
+                        ModelState.AddModelError("CandidateId", "Interview scheduling is not allowed because the candidate does not meet the required skills or experience in screening.");
+                    }
                 }
             }
 
@@ -949,6 +970,55 @@ namespace TalentTrack.Controllers
                 Console.WriteLine($"[LOG] Email Failed to {toEmail}");
                 throw;
             }
+        }
+
+        private List<Candidate> GetEligibleCandidatesForInterview()
+        {
+            var applications = _context.CandidateApplications
+                .Where(ca => ca.Status == "Screened" || ca.Status == "Pending")
+                .Include(ca => ca.Candidate)
+                .Include(ca => ca.Job)
+                    .ThenInclude(j => j!.JobSkills)
+                .ToList();
+
+            var eligibleCandidates = new List<Candidate>();
+
+            foreach (var app in applications)
+            {
+                if (app.Candidate == null) continue;
+
+                var screening = _context.Screenings
+                    .Where(s => s.ApplicationId == app.ApplicationId && s.Status == "Completed")
+                    .OrderByDescending(s => s.ScreeningDate)
+                    .FirstOrDefault();
+
+                if (screening == null) continue;
+
+                bool skillsMatch = true;
+                if (app.Job != null && app.Job.JobSkills != null)
+                {
+                    var evaluations = _context.ScreeningSkillEvaluations
+                        .Where(sse => sse.ScreeningId == screening.ScreeningId)
+                        .ToList();
+
+                    foreach (var requiredSkill in app.Job.JobSkills)
+                    {
+                        var matchingEval = evaluations.FirstOrDefault(e => e.SkillName.Trim().ToLower() == requiredSkill.SkillName.Trim().ToLower());
+                        if (matchingEval == null || !matchingEval.HasSkill || matchingEval.ExperienceYears < requiredSkill.RequiredExperience)
+                        {
+                            skillsMatch = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (skillsMatch)
+                {
+                    eligibleCandidates.Add(app.Candidate);
+                }
+            }
+
+            return eligibleCandidates.GroupBy(c => c.CandidateId).Select(g => g.First()).ToList();
         }
     }
 }

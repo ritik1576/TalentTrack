@@ -16,6 +16,10 @@ namespace TalentTrack.Models
         // Status: "Applied", "Screening", "Screened", "Interview", "Rejected"
         public string Status { get; set; } = "Applied";
 
+        [Required]
+        [MaxLength(50)]
+        public string BackgroundVerificationStatus { get; set; } = "Pending";
+
         // Navigation
         public virtual Candidate? Candidate { get; set; }
         public virtual Job? Job { get; set; }

@@ -146,7 +146,10 @@ namespace TalentTrack.Controllers
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
 
-            var application = _context.CandidateApplications.Find(applicationId);
+            var application = _context.CandidateApplications
+                .Include(ca => ca.Job)
+                    .ThenInclude(j => j!.JobSkills)
+                .FirstOrDefault(ca => ca.ApplicationId == applicationId);
             if (application == null) return NotFound();
 
             var existingScreening = _context.Screenings.Any(s => s.ApplicationId == applicationId && s.Status == "Completed");
@@ -188,6 +191,21 @@ namespace TalentTrack.Controllers
                 _context.SaveChanges();
             }
 
+            // Check if candidate matches all required skills for the job
+            bool skillsMatch = true;
+            if (application.Job != null && application.Job.JobSkills != null && SkillInputs != null)
+            {
+                foreach (var requiredSkill in application.Job.JobSkills)
+                {
+                    var matchingInput = SkillInputs.FirstOrDefault(si => si.SkillName.Trim().ToLower() == requiredSkill.SkillName.Trim().ToLower());
+                    if (matchingInput == null || !matchingInput.HasSkill || matchingInput.ExperienceYears < requiredSkill.RequiredExperience)
+                    {
+                        skillsMatch = false;
+                        break;
+                    }
+                }
+            }
+
             // Update application status
             var candidate = _context.Candidates.Find(application.CandidateId);
             bool isDup = false;
@@ -203,7 +221,19 @@ namespace TalentTrack.Controllers
             application.Status = isDup ? "Pending" : "Screened";
             _context.SaveChanges();
 
-            TempData["Success"] = isDup ? "Screening completed. Duplicate candidate detected, status set to Pending." : "Screening completed successfully!";
+            if (!skillsMatch)
+            {
+                TempData["Success"] = isDup 
+                    ? "Screening completed. Duplicate candidate detected, status set to Pending. Note: Candidate does not meet all required skills/experience." 
+                    : "Screening completed successfully! Note: Candidate does not meet all required skills/experience.";
+            }
+            else
+            {
+                TempData["Success"] = isDup 
+                    ? "Screening completed. Duplicate candidate detected, status set to Pending." 
+                    : "Screening completed successfully! Candidate matched all required skills.";
+            }
+
             return RedirectToAction("Index");
         }
     }

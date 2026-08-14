@@ -7,124 +7,142 @@
 }
 
 <div class="container-fluid">
-    <div class="mb-4">
-        <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>Verification Documents</h2>
-        <p class="text-muted mb-0">Please upload the required verification documents below to complete your onboarding verification. Only PDF, JPG, JPEG, and PNG files under 5MB are accepted.</p>
-    </div>
-
-    @if (TempData["SuccessMessage"] != null)
+    @if (ViewBag.IsShortlisted == false)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <!-- Candidate Info summary -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
-        <div class="card-body p-4">
-            <div class="d-flex align-items-center gap-3">
-                <div class="tt-avatar" style="width: 56px; height: 56px; font-size: 1.4rem; background-color: #ffffff; color: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    @(string.IsNullOrEmpty(candidate?.Name) ? "?" : candidate.Name.Substring(0, 1).ToUpper())
-                </div>
-                <div>
-                    <h5 class="fw-bold mb-0 text-dark">@(candidate?.Name ?? "Candidate")</h5>
-                    <div class="text-muted small">Email: @(candidate?.Email ?? "N/A") | Phone: @(candidate?.Phone ?? "N/A")</div>
-                </div>
-                <div class="ms-auto text-end">
-                    <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
-                        Uploaded Docs: @uploadedDocs.Count / @requiredTypes.Count
-                    </span>
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5 mt-4">
+            <div class="card-body py-5">
+                <i class="bi bi-shield-lock-fill text-warning display-1 mb-4"></i>
+                <h3 class="fw-bold mb-3 text-dark">Portal Access Restricted</h3>
+                <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 1.1rem;">
+                    Your verification document portal is currently locked. Only shortlisted/selected candidates are authorized to upload and view onboarding verification documents.
+                </p>
+                <div class="alert alert-info d-inline-block rounded-3 px-4 py-2 border-0" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>Please contact the recruitment team if you believe this is an error.
                 </div>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>Verification Documents</h2>
+            <p class="text-muted mb-0">Please upload the required verification documents below to complete your onboarding verification. Only PDF, JPG, JPEG, and PNG files under 5MB are accepted.</p>
+        </div>
 
-    <!-- Documents Grid -->
-    <div class="row g-4">
-        @foreach (var docType in requiredTypes)
+        @if (TempData["SuccessMessage"] != null)
         {
-            var doc = uploadedDocs.FirstOrDefault(d => d.DocumentType == docType);
-            bool isUploaded = doc != null;
+            <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
 
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0 text-dark">@docType</h5>
-                                @if (isUploaded)
-                                {
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
-                                        <i class="bi bi-check-circle-fill me-1"></i>Uploaded
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
-                                        <i class="bi bi-x-circle-fill me-1"></i>Not Uploaded
-                                    </span>
-                                }
-                            </div>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
 
-                            @if (isUploaded && doc != null)
-                            {
-                                <div class="bg-light rounded-3 p-3 mb-3">
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <i class="bi bi-file-earmark-text text-primary fs-4"></i>
-                                        <div class="text-truncate">
-                                            <div class="fw-medium text-dark text-truncate" title="@doc.FileName">@doc.FileName</div>
-                                            <small class="text-muted" style="font-size: 0.75rem;">
-                                                Uploaded on @doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
-                                                @if (doc.UpdatedAt.HasValue)
-                                                {
-                                                    <span>(Updated: @doc.UpdatedAt.Value.ToString("dd MMM yyyy"))</span>
-                                                }
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <a asp-action="Download" asp-route-id="@doc.DocumentId" class="btn btn-sm btn-outline-primary mt-1">
-                                        <i class="bi bi-download me-1"></i>Download/View File
-                                    </a>
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted small mb-3">No file has been uploaded for this document type yet. Please select a valid file to upload.</p>
-                            }
-                        </div>
-
-                        <!-- Upload/Replace form -->
-                        <div>
-                            <form asp-action="Upload" method="post" enctype="multipart/form-data">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="documentType" value="@docType" />
-                                <div class="input-group">
-                                    <input type="file" name="documentFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required />
-                                    <button type="submit" class="btn btn-primary">
-                                        @if (isUploaded)
-                                        {
-                                            <span>Replace</span>
-                                        }
-                                        else
-                                        {
-                                            <span>Upload</span>
-                                        }
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+        <!-- Candidate Info summary -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="tt-avatar" style="width: 56px; height: 56px; font-size: 1.4rem; background-color: #ffffff; color: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        @(string.IsNullOrEmpty(candidate?.Name) ? "?" : candidate.Name.Substring(0, 1).ToUpper())
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">@(candidate?.Name ?? "Candidate")</h5>
+                        <div class="text-muted small">Email: @(candidate?.Email ?? "N/A") | Phone: @(candidate?.Phone ?? "N/A")</div>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+                            Uploaded Docs: @uploadedDocs.Count / @requiredTypes.Count
+                        </span>
                     </div>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+
+        <!-- Documents Grid -->
+        <div class="row g-4">
+            @foreach (var docType in requiredTypes)
+            {
+                var doc = uploadedDocs.FirstOrDefault(d => d.DocumentType == docType);
+                bool isUploaded = doc != null;
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold mb-0 text-dark">@docType</h5>
+                                    @if (isUploaded)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Uploaded
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                            <i class="bi bi-x-circle-fill me-1"></i>Not Uploaded
+                                        </span>
+                                    }
+                                </div>
+
+                                @if (isUploaded && doc != null)
+                                {
+                                    <div class="bg-light rounded-3 p-3 mb-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="bi bi-file-earmark-text text-primary fs-4"></i>
+                                            <div class="text-truncate">
+                                                <div class="fw-medium text-dark text-truncate" title="@doc.FileName">@doc.FileName</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">
+                                                    Uploaded on @doc.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                                                    @if (doc.UpdatedAt.HasValue)
+                                                    {
+                                                        <span>(Updated: @doc.UpdatedAt.Value.ToString("dd MMM yyyy"))</span>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <a asp-action="Download" asp-route-id="@doc.DocumentId" class="btn btn-sm btn-outline-primary mt-1">
+                                            <i class="bi bi-download me-1"></i>Download/View File
+                                        </a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-3">No file has been uploaded for this document type yet. Please select a valid file to upload.</p>
+                                }
+                            </div>
+
+                            <!-- Upload/Replace form -->
+                            <div>
+                                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="documentType" value="@docType" />
+                                    <div class="input-group">
+                                        <input type="file" name="documentFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required />
+                                        <button type="submit" class="btn btn-primary">
+                                            @if (isUploaded)
+                                            {
+                                                <span>Replace</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Upload</span>
+                                            }
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
