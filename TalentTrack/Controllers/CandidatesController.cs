@@ -104,6 +104,7 @@ namespace TalentTrack.Controllers
                     // Update existing profile details with form fields if provided
                     existing.FirstName = candidate.FirstName;
                     existing.LastName = candidate.LastName;
+                    existing.Name = $"{candidate.FirstName} {candidate.LastName}".Trim();
                     if (!string.IsNullOrEmpty(candidate.Phone))
                     {
                         var digitsOnly = new string(candidate.Phone.Where(char.IsDigit).ToArray());
@@ -229,6 +230,7 @@ namespace TalentTrack.Controllers
 
             if (ModelState.IsValid)
             {
+                candidate.Name = $"{candidate.FirstName} {candidate.LastName}".Trim();
                 _context.Candidates.Add(candidate);
                 await _context.SaveChangesAsync();
 
@@ -331,6 +333,7 @@ namespace TalentTrack.Controllers
 
             existing.FirstName = candidate.FirstName;
             existing.LastName = candidate.LastName;
+            existing.Name = $"{candidate.FirstName} {candidate.LastName}".Trim();
             existing.Email = candidate.Email;
             existing.Phone = candidate.Phone;
             existing.Skills = candidate.Skills;
