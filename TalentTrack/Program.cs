@@ -5,6 +5,17 @@ using TalentTrack.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register PDFSharp Font Resolver
+try
+{
+    PdfSharp.Fonts.GlobalFontSettings.FontResolver = new WindowsFontResolver();
+}
+catch (System.Exception)
+{
+    // Ignore if already set
+}
+
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

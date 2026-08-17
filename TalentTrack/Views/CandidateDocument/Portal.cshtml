@@ -24,6 +24,46 @@
     }
     else
     {
+        var offer = ViewBag.Offer as TalentTrack.Models.OfferLetter;
+
+        @if (offer != null)
+        {
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border-left: 5px solid #0284c7 !important;">
+                <div class="card-body p-4">
+                    <div class="d-md-flex align-items-center justify-content-between">
+                        <div class="mb-3 mb-md-0">
+                            <h4 class="fw-bold text-dark mb-1">
+                                <i class="bi bi-gift-fill text-primary me-2"></i>Congratulations! You have an Offer
+                            </h4>
+                            <p class="text-secondary mb-0">We are thrilled to welcome you to the team. Please find your offer letter details below.</p>
+                            
+                            <div class="d-flex flex-wrap gap-4 mt-3">
+                                <div>
+                                    <small class="text-muted d-block mb-1">Position Offered</small>
+                                    <strong class="text-dark">@(offer.Application?.Job?.JobTitle ?? "Software Developer")</strong>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block mb-1">Joining Date</small>
+                                    <strong class="text-dark">@offer.JoiningDate.ToString("dd MMMM yyyy")</strong>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block mb-1">Status</small>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Sent
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a asp-action="DownloadOffer" asp-route-id="@offer.OfferLetterId" target="_blank" class="btn btn-primary px-4 py-3 rounded-3 fw-bold shadow-xs">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i>View/Download Offer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="mb-4">
             <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>Verification Documents</h2>
             <p class="text-muted mb-0">Please upload the required verification documents below to complete your onboarding verification. Only PDF, JPG, JPEG, and PNG files under 5MB are accepted.</p>

@@ -3,9 +3,13 @@ wwwroot/uploads/*
 !wwwroot/uploads/.gitkeep
 !wwwroot/uploads/resumes/
 !wwwroot/uploads/documents/
+!wwwroot/uploads/offers/
 
 wwwroot/uploads/resumes/*
 !wwwroot/uploads/resumes/.gitkeep
 
 wwwroot/uploads/documents/*
 !wwwroot/uploads/documents/.gitkeep
+
+wwwroot/uploads/offers/*
+!wwwroot/uploads/offers/.gitkeep

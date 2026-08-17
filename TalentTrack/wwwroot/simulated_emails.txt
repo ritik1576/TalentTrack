@@ -18,3 +18,20 @@ Best regards,
 Recruitment Team
 TalentTrack
 ============================================================
+
+============================================================
+SIMULATED EMAIL SENT (WITH ATTACHMENT: OfferLetter_2014_639223268956960917.pdf)
+Date: 14 Aug 2026, 05:54 PM
+To: mehul@gmail.com
+Subject: Offer Letter – TalentTrack
+Body:
+Dear mehul gupta,
+
+Please find attached your Offer Letter for the position of software developer.
+
+Your joining date is 14 August 2026.
+
+Regards,
+Recruitment Team
+TalentTrack
+============================================================

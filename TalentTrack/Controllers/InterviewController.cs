@@ -426,32 +426,6 @@ namespace TalentTrack.Controllers
                 {
                     ModelState.AddModelError("CandidateId", "Interview scheduling is not allowed until Screening is completed.");
                 }
-                else
-                {
-                    // Check skills match
-                    bool skillsMatch = true;
-                    if (app.Job != null && app.Job.JobSkills != null)
-                    {
-                        var evaluations = _context.ScreeningSkillEvaluations
-                            .Where(sse => sse.ScreeningId == screening.ScreeningId)
-                            .ToList();
-
-                        foreach (var requiredSkill in app.Job.JobSkills)
-                        {
-                            var matchingEval = evaluations.FirstOrDefault(e => e.SkillName.Trim().ToLower() == requiredSkill.SkillName.Trim().ToLower());
-                            if (matchingEval == null || !matchingEval.HasSkill || matchingEval.ExperienceYears < requiredSkill.RequiredExperience)
-                            {
-                                skillsMatch = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!skillsMatch)
-                    {
-                        ModelState.AddModelError("CandidateId", "Interview scheduling is not allowed because the candidate does not meet the required skills or experience in screening.");
-                    }
-                }
             }
 
             // Technical interviewer required
@@ -992,30 +966,7 @@ namespace TalentTrack.Controllers
                     .OrderByDescending(s => s.ScreeningDate)
                     .FirstOrDefault();
 
-                if (screening == null) continue;
-
-                bool skillsMatch = true;
-                if (app.Job != null && app.Job.JobSkills != null)
-                {
-                    var evaluations = _context.ScreeningSkillEvaluations
-                        .Where(sse => sse.ScreeningId == screening.ScreeningId)
-                        .ToList();
-
-                    foreach (var requiredSkill in app.Job.JobSkills)
-                    {
-                        var matchingEval = evaluations.FirstOrDefault(e => e.SkillName.Trim().ToLower() == requiredSkill.SkillName.Trim().ToLower());
-                        if (matchingEval == null || !matchingEval.HasSkill || matchingEval.ExperienceYears < requiredSkill.RequiredExperience)
-                        {
-                            skillsMatch = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (skillsMatch)
-                {
-                    eligibleCandidates.Add(app.Candidate);
-                }
+                eligibleCandidates.Add(app.Candidate);
             }
 
             return eligibleCandidates.GroupBy(c => c.CandidateId).Select(g => g.First()).ToList();
