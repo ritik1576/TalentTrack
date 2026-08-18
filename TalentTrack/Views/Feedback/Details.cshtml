@@ -88,40 +88,7 @@
                     </div>
                 </div>
             }
-            else
-            {
-                <!-- Scores -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-header bg-white border-0 py-3 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Skill Scores (Legacy)</h6>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="row g-3">
-                            <div class="col-md-4 text-center">
-                                <div class="fw-bold fs-2 text-primary">@Model.TechnicalScore<small class="fs-6 text-muted">/10</small></div>
-                                <div class="text-muted small">Technical Skills</div>
-                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                    <div class="progress-bar bg-primary" style="width:@(Model.TechnicalScore * 10)%"></div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <div class="fw-bold fs-2 text-success">@Model.CommunicationScore<small class="fs-6 text-muted">/10</small></div>
-                                <div class="text-muted small">Communication</div>
-                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                    <div class="progress-bar bg-success" style="width:@(Model.CommunicationScore * 10)%"></div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <div class="fw-bold fs-2 text-warning">@Model.ProblemSolvingScore<small class="fs-6 text-muted">/10</small></div>
-                                <div class="text-muted small">Problem Solving</div>
-                                <div class="progress mt-2" style="height:8px;border-radius:4px;">
-                                    <div class="progress-bar bg-warning" style="width:@(Model.ProblemSolvingScore * 10)%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
+
 
             <!-- Qualitative -->
             <div class="row g-4 mb-4">

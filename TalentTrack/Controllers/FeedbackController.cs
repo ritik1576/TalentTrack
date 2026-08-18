@@ -23,6 +23,7 @@ namespace TalentTrack.Controllers
             var query = _context.InterviewFeedbacks
                 .Include(f => f.Candidate)
                 .Include(f => f.Interviewer)
+                .Include(f => f.SkillRatings)
                 .Include(f => f.Interview)
                     .ThenInclude(i => i!.Job)
                 .AsQueryable();
