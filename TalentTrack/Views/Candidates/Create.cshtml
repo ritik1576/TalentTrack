@@ -102,19 +102,19 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label asp-for="FirstName" class="form-label fw-medium">First Name <span class="text-danger">*</span></label>
-                            <input asp-for="FirstName" class="form-control" placeholder="e.g. Rahul" required />
+                            <input asp-for="FirstName" class="form-control" placeholder="e.g. Rahul" required pattern="^[a-zA-Z\s]+$" title="First name must contain only alphabets." oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '');" />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="LastName" class="form-label fw-medium">Last Name <span class="text-danger">*</span></label>
-                            <input asp-for="LastName" class="form-control" placeholder="e.g. Sharma" required />
+                            <input asp-for="LastName" class="form-control" placeholder="e.g. Sharma" required pattern="^[a-zA-Z\s]+$" title="Last name must contain only alphabets." oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '');" />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label fw-medium">Email Address <span class="text-danger">*</span></label>
-                        <input asp-for="Email" type="email" class="form-control" placeholder="e.g. rahul@example.com" required />
+                        <input asp-for="Email" type="email" class="form-control" placeholder="e.g. rahul@example.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 

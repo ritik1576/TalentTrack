@@ -133,6 +133,13 @@ namespace TalentTrack.Controllers
                 return View(model);
             }
 
+            if (!ModelState.IsValid)
+            {
+                var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage;
+                ViewBag.Error = firstError ?? "Invalid inputs. Please verify your details.";
+                return View(model);
+            }
+
             if (!string.IsNullOrEmpty(model.Phone))
             {
                 var digitsOnly = new string(model.Phone.Where(char.IsDigit).ToArray());
@@ -223,6 +230,20 @@ namespace TalentTrack.Controllers
         public IActionResult Profile(string name, string email, string phone, string company, string location, string bio, string linkedin)
         {
             var role = HttpContext.Session.GetString("UserRole");
+
+            // Validation for Name: must contain only letters and spaces
+            if (string.IsNullOrWhiteSpace(name) || !System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-zA-Z\s]+$"))
+            {
+                TempData["Error"] = "Name must contain only alphabets and spaces.";
+                return RedirectToAction("Profile");
+            }
+
+            // Validation for Email: must be clean
+            if (string.IsNullOrWhiteSpace(email) || !System.Text.RegularExpressions.Regex.IsMatch(email, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+            {
+                TempData["Error"] = "Please enter a valid email address.";
+                return RedirectToAction("Profile");
+            }
 
             // Server-side validation for Phone: if provided, must be exactly 10 digits
             if (!string.IsNullOrEmpty(phone))

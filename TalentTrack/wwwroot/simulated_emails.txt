@@ -35,3 +35,54 @@ Regards,
 Recruitment Team
 TalentTrack
 ============================================================
+
+============================================================
+SIMULATED EMAIL SENT (WITH ATTACHMENT: OfferLetter_2015_639225841935254693.pdf)
+Date: 17 Aug 2026, 05:23 PM
+To: ritika@gmail.com
+Subject: Offer Letter – TalentTrack
+Body:
+Dear ritika  sahu,
+
+Please find attached your Offer Letter for the position of Hr.
+
+Your joining date is 17 August 2026.
+
+Regards,
+Recruitment Team
+TalentTrack
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT (WITH ATTACHMENT: OfferLetter_2015_639225843427010623.pdf)
+Date: 17 Aug 2026, 05:25 PM
+To: ritika@gmail.com
+Subject: Offer Letter – TalentTrack
+Body:
+Dear ritika  sahu,
+
+Please find attached your Offer Letter for the position of Hr.
+
+Your joining date is 12 August 2026.
+
+Regards,
+Recruitment Team
+TalentTrack
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT (WITH ATTACHMENT: OfferLetter_3016_639225853772790926.pdf)
+Date: 17 Aug 2026, 05:42 PM
+To: aarti@gmail.com
+Subject: Offer Letter – TalentTrack
+Body:
+Dear aarti  patil,
+
+Please find attached your Offer Letter for the position of GAME  DEVLOPER.
+
+Your joining date is 18 August 2026.
+
+Regards,
+Recruitment Team
+TalentTrack
+============================================================

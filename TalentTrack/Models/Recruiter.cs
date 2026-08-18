@@ -7,10 +7,13 @@ namespace TalentTrack.Models
         [Key]
         public int RecruiterId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Name is required.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Name must contain only alphabets.")]
         public string Name { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Please enter a valid email address.")]
         public string Email { get; set; } = "";
 
         [Required]

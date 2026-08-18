@@ -112,37 +112,53 @@
                                         </div>
 
                                         <!-- Score Bars -->
-                                        <div class="mb-2">
-                                            <div class="row g-2">
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Tech</span>
-                                                        <span class="fw-bold">@fb.TechnicalScore/10</span>
-                                                    </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-primary" style="width:@(fb.TechnicalScore * 10)%"></div>
-                                                    </div>
+                                        @if (fb.SkillRatings != null && fb.SkillRatings.Any())
+                                        {
+                                            <div class="mb-2">
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    @foreach (var sr in fb.SkillRatings)
+                                                    {
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style="font-size:0.7rem;">
+                                                            @sr.SkillName: <strong>@sr.Rating/5</strong>
+                                                        </span>
+                                                    }
                                                 </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Comm</span>
-                                                        <span class="fw-bold">@fb.CommunicationScore/10</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="mb-2">
+                                                <div class="row g-2">
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                            <span class="text-muted">Tech</span>
+                                                            <span class="fw-bold">@fb.TechnicalScore/10</span>
+                                                        </div>
+                                                        <div class="progress" style="height:4px;border-radius:2px;">
+                                                            <div class="progress-bar bg-primary" style="width:@(fb.TechnicalScore * 10)%"></div>
+                                                        </div>
                                                     </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-success" style="width:@(fb.CommunicationScore * 10)%"></div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                            <span class="text-muted">Comm</span>
+                                                            <span class="fw-bold">@fb.CommunicationScore/10</span>
+                                                        </div>
+                                                        <div class="progress" style="height:4px;border-radius:2px;">
+                                                            <div class="progress-bar bg-success" style="width:@(fb.CommunicationScore * 10)%"></div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Problem</span>
-                                                        <span class="fw-bold">@fb.ProblemSolvingScore/10</span>
-                                                    </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-warning" style="width:@(fb.ProblemSolvingScore * 10)%"></div>
+                                                    <div class="col-4">
+                                                        <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
+                                                            <span class="text-muted">Problem</span>
+                                                            <span class="fw-bold">@fb.ProblemSolvingScore/10</span>
+                                                        </div>
+                                                        <div class="progress" style="height:4px;border-radius:2px;">
+                                                            <div class="progress-bar bg-warning" style="width:@(fb.ProblemSolvingScore * 10)%"></div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        }
 
                                         <!-- Comments Preview -->
                                         @if (!string.IsNullOrEmpty(fb.Comments))
