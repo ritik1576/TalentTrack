@@ -280,6 +280,16 @@ else
                                 </div>
                             </a>
                         }
+                        else if (userRole == "Candidate")
+                        {
+                            <a asp-controller="CandidateDocument" asp-action="Portal" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                                <div class="tt-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444);">@userInitials</div>
+                                <div class="d-none d-sm-block text-start">
+                                    <div class="fw-bold fs-6 leading-tight">@userName</div>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">Candidate</div>
+                                </div>
+                            </a>
+                        }
                         else
                         {
                             <a asp-controller="Account" asp-action="Profile" class="d-flex align-items-center gap-2 text-decoration-none text-dark">

@@ -53,7 +53,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Email Address</label>
-                                <input type="email" name="email" class="form-control" value="@userEmail" placeholder="your@email.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." />
+                                <input type="email" name="email" class="form-control" value="@userEmail" placeholder="your@email.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." oninput="this.value = this.value.replace(/[^a-zA-Z0-9.@@_%+-]/g, '');" />
                             </div>
                              <div class="col-md-6">
                                 <label class="form-label fw-medium">Phone Number</label>

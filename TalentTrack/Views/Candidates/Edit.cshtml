@@ -36,7 +36,7 @@
 
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label fw-medium">Email Address <span class="text-danger">*</span></label>
-                        <input asp-for="Email" type="email" class="form-control" placeholder="e.g. rahul@example.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." />
+                        <input asp-for="Email" type="email" class="form-control" placeholder="e.g. rahul@example.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." oninput="this.value = this.value.replace(/[^a-zA-Z0-9.@@_%+-]/g, '');" />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 

@@ -54,7 +54,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-light fw-medium small">Email Address <span class="text-danger">*</span></label>
-                            <input asp-for="Email" type="email" class="form-control" placeholder="name@company.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." />
+                            <input asp-for="Email" type="email" class="form-control" placeholder="name@company.com" required pattern="^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address." oninput="this.value = this.value.replace(/[^a-zA-Z0-9.@@_%+-]/g, '');" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-light fw-medium small">Password <span class="text-danger">*</span></label>
@@ -65,6 +65,7 @@
                             <select asp-for="Role" class="form-select bg-dark text-white border-secondary" required>
                                 <option value="Recruiter">Recruiter (Post Jobs & Schedule)</option>
                                 <option value="Interviewer">Interviewer (Conduct Interviews & Rate)</option>
+                                <option value="Candidate">Candidate (Upload Verification Docs)</option>
                             </select>
                         </div>
                         <div class="col-md-6">

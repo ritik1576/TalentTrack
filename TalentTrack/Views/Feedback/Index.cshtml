@@ -6,6 +6,33 @@
 }
 
 <div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 p-3 d-flex align-items-center" role="alert">
+            <div class="tt-icon-bubble me-3" style="width:40px;height:40px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.2rem;display:flex;align-items:center;justify-content:center;border-radius:50%;">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading fw-bold mb-1 text-success">Candidate Shortlisted</h6>
+                <p class="mb-0 small text-secondary">@TempData["Success"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 p-3 d-flex align-items-center" role="alert">
+            <div class="tt-icon-bubble me-3" style="width:40px;height:40px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.2rem;display:flex;align-items:center;justify-content:center;border-radius:50%;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading fw-bold mb-1 text-warning">Application Rejected</h6>
+                <p class="mb-0 small text-secondary">@TempData["Warning"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="mb-3">
         <a href="javascript:history.back()" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
             <i class="bi bi-arrow-left fs-5"></i>

@@ -39,6 +39,10 @@ namespace TalentTrack.Models
 
         public string? Resume { get; set; }
 
+        // Password Reset OTP
+        public string? ResetOTP { get; set; }
+        public DateTime? ResetOTPExpiry { get; set; }
+
         // Phase 2: Navigation for per-skill experience and job applications
         public virtual ICollection<CandidateSkill> CandidateSkills { get; set; } = new List<CandidateSkill>();
         public virtual ICollection<CandidateApplication> Applications { get; set; } = new List<CandidateApplication>();

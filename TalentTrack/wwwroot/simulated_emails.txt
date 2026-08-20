@@ -86,3 +86,96 @@ Regards,
 Recruitment Team
 TalentTrack
 ============================================================
+
+============================================================
+SIMULATED EMAIL SENT
+Date: 18 Aug 2026, 05:01 PM
+To: paridhi@gmail.com
+Subject: Onboarding Document Verification Portal Enabled
+Body:
+Dear paridhi dubey,
+
+Congratulations! You have been shortlisted for onboarding at TalentTrack.
+Your document verification portal is now active. Please log in to your dashboard and upload the required onboarding verification documents:
+- ID Proof
+- Address Proof
+- Education Certificate
+- Experience Letter
+
+Please note:
+- Your registered Contact Number (5254632587) is your login password.
+- You can upload your documents through the dashboard.
+- You can change your password by clicking 'Forgot Password' on the login screen.
+
+Best regards,
+Recruitment Team
+TalentTrack
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT
+Date: 18 Aug 2026, 06:37 PM
+To: paridhi@gmail.com
+Subject: TalentTrack Password Reset OTP
+Body:
+Hello,
+
+You have requested to reset your password. 
+Your 6-digit One Time Password (OTP) is: 478201
+
+This OTP is valid for 10 minutes.
+
+Best regards,
+TalentTrack System
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT
+Date: 20 Aug 2026, 10:30 AM
+To: mansithorat71@gmail.com
+Subject: TalentTrack Password Reset OTP
+Body:
+Hello,
+
+You have requested to reset your password. 
+Your 6-digit One Time Password (OTP) is: 818161
+
+This OTP is valid for 10 minutes.
+
+Best regards,
+TalentTrack System
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT
+Date: 20 Aug 2026, 10:53 AM
+To: mansithorat71@gmail.com
+Subject: TalentTrack Password Reset OTP
+Body:
+Hello,
+
+You have requested to reset your password. 
+Your 6-digit One Time Password (OTP) is: 136141
+
+This OTP is valid for 10 minutes.
+
+Best regards,
+TalentTrack System
+============================================================
+
+============================================================
+SIMULATED EMAIL SENT
+Date: 20 Aug 2026, 11:17 AM
+To: mansithorat71@gmail.com
+Subject: TalentTrack Password Reset OTP
+Body:
+Hello,
+
+You have requested to reset your password. 
+Your 6-digit One Time Password (OTP) is: 621566
+
+This OTP is valid for 10 minutes.
+
+Best regards,
+TalentTrack System
+============================================================

@@ -38,6 +38,10 @@ namespace TalentTrack.Models
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
+        // Password Reset OTP
+        public string? ResetOTP { get; set; }
+        public DateTime? ResetOTPExpiry { get; set; }
+
         // Relationships
         public virtual ICollection<InterviewParticipant> InterviewParticipants { get; set; } = new List<InterviewParticipant>();
 
