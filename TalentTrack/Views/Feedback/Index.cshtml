@@ -6,6 +6,33 @@
 }
 
 <div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 p-3 d-flex align-items-center" role="alert">
+            <div class="tt-icon-bubble me-3" style="width:40px;height:40px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.2rem;display:flex;align-items:center;justify-content:center;border-radius:50%;">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading fw-bold mb-1 text-success">Candidate Shortlisted</h6>
+                <p class="mb-0 small text-secondary">@TempData["Success"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4 p-3 d-flex align-items-center" role="alert">
+            <div class="tt-icon-bubble me-3" style="width:40px;height:40px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.2rem;display:flex;align-items:center;justify-content:center;border-radius:50%;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading fw-bold mb-1 text-warning">Application Rejected</h6>
+                <p class="mb-0 small text-secondary">@TempData["Warning"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="mb-3">
         <a href="javascript:history.back()" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 hover-opacity fw-medium">
             <i class="bi bi-arrow-left fs-5"></i>
@@ -112,37 +139,19 @@
                                         </div>
 
                                         <!-- Score Bars -->
-                                        <div class="mb-2">
-                                            <div class="row g-2">
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Tech</span>
-                                                        <span class="fw-bold">@fb.TechnicalScore/10</span>
-                                                    </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-primary" style="width:@(fb.TechnicalScore * 10)%"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Comm</span>
-                                                        <span class="fw-bold">@fb.CommunicationScore/10</span>
-                                                    </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-success" style="width:@(fb.CommunicationScore * 10)%"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <div class="d-flex justify-content-between mb-1" style="font-size:0.7rem;">
-                                                        <span class="text-muted">Problem</span>
-                                                        <span class="fw-bold">@fb.ProblemSolvingScore/10</span>
-                                                    </div>
-                                                    <div class="progress" style="height:4px;border-radius:2px;">
-                                                        <div class="progress-bar bg-warning" style="width:@(fb.ProblemSolvingScore * 10)%"></div>
-                                                    </div>
+                                        @if (fb.SkillRatings != null && fb.SkillRatings.Any())
+                                        {
+                                            <div class="mb-2">
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    @foreach (var sr in fb.SkillRatings)
+                                                    {
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1" style="font-size:0.7rem;">
+                                                            @sr.SkillName: <strong>@sr.Rating/5</strong>
+                                                        </span>
+                                                    }
                                                 </div>
                                             </div>
-                                        </div>
+                                        }
 
                                         <!-- Comments Preview -->
                                         @if (!string.IsNullOrEmpty(fb.Comments))

@@ -36,13 +36,23 @@
                         </div>
                         <div class="opacity-75" style="font-size:0.75rem;">recruiter@talenttrack.com / recruiter123</div>
                     </div>
-                    <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:0.75rem 1rem;">
+                    <div class="mb-2" style="background:rgba(255,255,255,0.1);border-radius:12px;padding:0.75rem 1rem;">
                         <div class="d-flex align-items-center justify-content-between mb-1">
                             <span class="fw-bold small"><i class="bi bi-person-check me-1"></i>Interviewer</span>
                             <span class="tt-role-badge-interviewer" style="font-size:0.65rem;">Approved</span>
                         </div>
                         <div class="opacity-75" style="font-size:0.75rem;">interviewer@talenttrack.com / interviewer123</div>
                     </div>
+                    @if (ViewBag.DemoCandidateEmail != null)
+                    {
+                        <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:0.75rem 1rem;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold small"><i class="bi bi-person me-1"></i>Candidate</span>
+                                <span class="badge bg-warning" style="font-size:0.65rem;">Portal Active</span>
+                            </div>
+                            <div class="opacity-75" style="font-size:0.75rem;">@ViewBag.DemoCandidateEmail / @ViewBag.DemoCandidatePassword</div>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -83,7 +93,7 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <label class="form-label text-light fw-medium small">Password</label>
-                            <a href="#" class="text-primary small text-decoration-none" onclick="alert('Recruiter: recruiter123 | Interviewer: interviewer123 | Admin: admin123'); return false;">Forgot Password?</a>
+                            <a asp-controller="Account" asp-action="ForgotPassword" class="text-primary small text-decoration-none">Forgot Password?</a>
                         </div>
                         <div class="input-group">
                             <span class="input-group-text bg-transparent border-secondary border-opacity-50 text-secondary">
@@ -119,6 +129,24 @@
                             <button type="button" class="btn tt-demo-btn" onclick="fillDemo('interviewer@talenttrack.com', 'interviewer123')">
                                 <i class="bi bi-person-check me-1" style="color:#10B981;"></i> Interviewer
                             </button>
+                            @if (ViewBag.DemoCandidates != null && ((List<TalentTrack.Models.Candidate>)ViewBag.DemoCandidates).Any())
+                            {
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn tt-demo-btn dropdown-toggle" type="button" id="candidateDemoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-person me-1" style="color:#F59E0B;"></i> Candidate
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary" aria-labelledby="candidateDemoDropdown" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                        @foreach (var c in (List<TalentTrack.Models.Candidate>)ViewBag.DemoCandidates)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item small" href="#" onclick="fillDemo('@c.Email', '@c.Phone'); return false;">
+                                                    @c.Name (@c.Email)
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
                         </div>
                     </div>
                 </form>

@@ -7,7 +7,12 @@ namespace TalentTrack.Models
         [Key]
         public int CandidateId { get; set; }
 
+        [Required(ErrorMessage = "First name is required.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "First name must contain only alphabets.")]
         public string? FirstName { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Last name must contain only alphabets.")]
         public string? LastName { get; set; }
 
         public string? Name
@@ -22,6 +27,8 @@ namespace TalentTrack.Models
             }
         }
 
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Please enter a valid email address.")]
         public string? Email { get; set; }
 
         public string? Phone { get; set; }
@@ -31,6 +38,10 @@ namespace TalentTrack.Models
         public int? Experience { get; set; }
 
         public string? Resume { get; set; }
+
+        // Password Reset OTP
+        public string? ResetOTP { get; set; }
+        public DateTime? ResetOTPExpiry { get; set; }
 
         // Phase 2: Navigation for per-skill experience and job applications
         public virtual ICollection<CandidateSkill> CandidateSkills { get; set; } = new List<CandidateSkill>();

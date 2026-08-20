@@ -2,16 +2,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TalentTrack.Data;
 using TalentTrack.Models;
+using TalentTrack.Services;
 
 namespace TalentTrack.Controllers
 {
     public class FeedbackController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService? _emailService;
 
-        public FeedbackController(ApplicationDbContext context)
+        public FeedbackController(ApplicationDbContext context, IEmailService? emailService = null)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // Recruiter & Admin view — all feedbacks or filtered by interviewer
@@ -23,6 +26,7 @@ namespace TalentTrack.Controllers
             var query = _context.InterviewFeedbacks
                 .Include(f => f.Candidate)
                 .Include(f => f.Interviewer)
+                .Include(f => f.SkillRatings)
                 .Include(f => f.Interview)
                     .ThenInclude(i => i!.Job)
                 .AsQueryable();
@@ -227,6 +231,38 @@ TalentTrack
                     }
                     await System.IO.File.AppendAllTextAsync(emailLogPath, emailBody);
 
+                    // Send actual email via SMTP if configured
+                    try
+                    {
+                        if (_emailService != null && !string.IsNullOrEmpty(candidate.Email))
+                        {
+                            string subject = "Onboarding Document Verification Portal Enabled";
+                            string htmlBody = $@"
+                                <h2>Dear {candidate.Name},</h2>
+                                <p><strong>Congratulations!</strong> You have been shortlisted for onboarding at TalentTrack.</p>
+                                <p>Your document verification portal is now active. Please log in to your dashboard and upload the required onboarding verification documents:</p>
+                                <ul>
+                                    <li>ID Proof</li>
+                                    <li>Address Proof</li>
+                                    <li>Education Certificate</li>
+                                    <li>Experience Letter</li>
+                                </ul>
+                                <p><strong>Login Details:</strong></p>
+                                <ul>
+                                    <li><strong>Username:</strong> {candidate.Email}</li>
+                                    <li><strong>Password:</strong> {candidate.Phone} (Your registered Contact Number)</li>
+                                </ul>
+                                <p>You can change your password by clicking 'Forgot Password' on the login screen.</p>
+                                <p>Best regards,<br/>Recruitment Team<br/>TalentTrack</p>";
+
+                            await _emailService.SendEmailAsync(candidate.Email, subject, htmlBody);
+                        }
+                    }
+                    catch (System.Exception)
+                    {
+                        // Fail silently or log error so local demo won't crash if SMTP is not configured
+                    }
+
                     _context.Notifications.Add(new Notification
                     {
                         TargetRole = "Candidate",
@@ -236,9 +272,13 @@ TalentTrack
                         CreatedAt = DateTime.Now,
                         TargetUrl = "/CandidateDocument/Portal"
                     });
-                }
 
-                TempData["Success"] = "Candidate accepted successfully. Email sent and Document Portal enabled!";
+                    TempData["Success"] = $"Candidate '{candidate.Name}' accepted and shortlisted! A notification has been sent to their email.";
+                }
+                else
+                {
+                    TempData["Success"] = "Candidate accepted successfully.";
+                }
             }
             else if (decision == "Reject")
             {
