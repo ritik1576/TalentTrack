@@ -3,6 +3,7 @@ namespace TalentTrack.Models.DTOs
     public class ScreeningDashboardViewModel
     {
         public List<ScreeningDashboardItem> Applications { get; set; } = new();
+        public PaginationMetadata Metadata { get; set; } = new();
     }
 
     public class ScreeningDashboardItem

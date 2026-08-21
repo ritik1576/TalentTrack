@@ -17,10 +17,52 @@ namespace TalentTrack.Controllers
         }
 
         // Show Jobs
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? search, string? filterStatus, int page = 1, int pageSize = 10)
         {
-            var jobs = _context.Jobs.Include(j => j.JobSkills).ToList();
-            return View(jobs);
+            var query = _context.Jobs.Include(j => j.JobSkills).AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowerSearch = search.ToLower().Trim();
+                query = query.Where(j => j.JobTitle != null && j.JobTitle.ToLower().Contains(lowerSearch) || 
+                                         j.Location != null && j.Location.ToLower().Contains(lowerSearch));
+            }
+
+            if (!string.IsNullOrEmpty(filterStatus))
+            {
+                var lowerStatus = filterStatus.ToLower().Trim();
+                query = query.Where(j => j.Status != null && j.Status.ToLower() == lowerStatus);
+            }
+
+            var totalItems = await query.CountAsync();
+
+            // Ensure bounds for page
+            if (page < 1) page = 1;
+
+            if (pageSize == -1)
+            {
+                pageSize = totalItems > 0 ? totalItems : 10;
+            }
+            else if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var items = await query
+                .OrderBy(j => j.JobId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var pagedList = new PagedList<Job>(items, totalItems, page, pageSize);
+
+            ViewBag.Search = search;
+            ViewBag.FilterStatus = filterStatus;
+
+            return View(pagedList);
         }
 
         // Job Details Page

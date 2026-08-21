@@ -1,11 +1,11 @@
-@model IEnumerable<TalentTrack.Models.Interview>
+@model TalentTrack.Models.DTOs.PagedList<TalentTrack.Models.Interview>
 
 @{
     ViewData["Title"] = "Interview Management";
-    var totalInterviews = Model?.Count() ?? 0;
-    var todayInterviews = Model?.Count(i => i.InterviewDate.Date == DateTime.Today) ?? 0;
-    var completedInterviews = Model?.Count(i => i.Status == "Completed") ?? 0;
-    var pendingInterviews = Model?.Count(i => i.Status == "Pending" || i.Status == "Scheduled") ?? 0;
+    var totalInterviews = ViewBag.TotalInterviewsCount ?? 0;
+    var todayInterviews = ViewBag.TodayInterviewsCount ?? 0;
+    var completedInterviews = ViewBag.CompletedInterviewsCount ?? 0;
+    var pendingInterviews = ViewBag.PendingInterviewsCount ?? 0;
 }
 
 <div class="container-fluid">
@@ -64,7 +64,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4 rounded-4">
+    <div class="card border-0 shadow-sm mb-4 rounded-4 mt-4">
         <div class="card-body p-3">
             <form method="get" asp-action="Index" class="row g-2 align-items-center">
                 <div class="col-md-3">
@@ -111,9 +111,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
+                        @if (Model != null && Model.Items.Any())
                         {
-                            @foreach (var interview in Model)
+                            @foreach (var interview in Model.Items)
                             {
                                 <tr>
                                     <td class="ps-4 fw-medium text-dark">
@@ -186,7 +186,12 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination UI -->
+            @if (Model != null)
+            {
+                <partial name="_Pagination" model="Model.Metadata" />
+            }
         </div>
     </div>
-
 </div>

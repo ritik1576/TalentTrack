@@ -1,0 +1,132 @@
+@model TalentTrack.Models.DTOs.PaginationMetadata
+
+@{
+    var queryParams = Context.Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
+    
+    string GetPageUrl(int pageNum)
+    {
+        var pageParams = new Dictionary<string, string>(queryParams);
+        pageParams["page"] = pageNum.ToString();
+        var qs = string.Join("&", pageParams.Select(x => $"{Uri.EscapeDataString(x.Key)}={Uri.EscapeDataString(x.Value)}"));
+        return $"{Context.Request.Path}?{qs}";
+    }
+
+    string GetPageSizeUrl(int size)
+    {
+        var sizeParams = new Dictionary<string, string>(queryParams);
+        sizeParams["pageSize"] = size.ToString();
+        sizeParams["page"] = "1"; // Reset to page 1 when changing page size
+        var qs = string.Join("&", sizeParams.Select(x => $"{Uri.EscapeDataString(x.Key)}={Uri.EscapeDataString(x.Value)}"));
+        return $"{Context.Request.Path}?{qs}";
+    }
+}
+
+@if (Model.TotalItems > 0)
+{
+    <nav aria-label="Page navigation" class="d-flex justify-content-between align-items-center px-4 py-3 border-top bg-light bg-opacity-50 flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="small text-muted">
+                Showing page <strong>@Model.CurrentPage</strong> of <strong>@Model.TotalPages</strong> (@Model.TotalItems records)
+            </div>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <label class="mb-0">Show:</label>
+                <select class="form-select form-select-sm d-inline-block w-auto" style="min-width: 75px;" onchange="location.href=this.value;">
+                    @{
+                        var queryPageSize = Context.Request.Query["pageSize"].ToString();
+                        var selectedSize = 10; // Default
+                        if (!string.IsNullOrEmpty(queryPageSize) && int.TryParse(queryPageSize, out int parsedSize))
+                        {
+                            selectedSize = parsedSize;
+                        }
+                        else if (Model.PageSize > 0)
+                        {
+                            // Fallback to Model.PageSize if query is not present (but only if it matches total items or default)
+                            if (Model.PageSize == Model.TotalItems && Model.TotalItems > 10)
+                            {
+                                selectedSize = -1; // Treated as "All"
+                            }
+                            else
+                            {
+                                selectedSize = Model.PageSize;
+                            }
+                        }
+
+                        var pageSizes = new[] { 10, 25, 50, 100, -1 };
+                        foreach (var size in pageSizes)
+                        {
+                            var text = size == -1 ? "All" : size.ToString();
+                            var isSelected = selectedSize == size;
+                            if (isSelected)
+                            {
+                                <option value="@GetPageSizeUrl(size)" selected>@text</option>
+                            }
+                            else
+                            {
+                                <option value="@GetPageSizeUrl(size)">@text</option>
+                            }
+                        }
+                    }
+                </select>
+                <span>entries</span>
+            </div>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <ul class="pagination pagination-sm mb-0">
+                <!-- First / Previous -->
+                <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                    <a class="page-link" href="@(Model.HasPrevious ? GetPageUrl(1) : "#")" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                    <a class="page-link" href="@(Model.HasPrevious ? GetPageUrl(Model.CurrentPage - 1) : "#")" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                @{
+                    int startPage = Math.Max(1, Model.CurrentPage - 2);
+                    int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                    if (startPage > 1)
+                    {
+                        <li class="page-item"><a class="page-link" href="@GetPageUrl(1)">1</a></li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                        </li>
+                    }
+                    if (endPage < Model.TotalPages)
+                    {
+                        if (endPage < Model.TotalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item"><a class="page-link" href="@GetPageUrl(Model.TotalPages)">@Model.TotalPages</a></li>
+                    }
+                }
+
+                <!-- Next / Last -->
+                <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                    <a class="page-link" href="@(Model.HasNext ? GetPageUrl(Model.CurrentPage + 1) : "#")" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                    <a class="page-link" href="@(Model.HasNext ? GetPageUrl(Model.TotalPages) : "#")" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        }
+    </nav>
+}
+
