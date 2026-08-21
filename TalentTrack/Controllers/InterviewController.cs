@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TalentTrack.Data;
 using TalentTrack.Models;
 using TalentTrack.Services;
+using TalentTrack.Models.DTOs;
 
 namespace TalentTrack.Controllers
 {
@@ -23,7 +24,7 @@ namespace TalentTrack.Controllers
         }
 
         // List all interviews (Recruiter / Admin view) with search and filtering
-        public IActionResult Index(string? searchCandidate, string? searchInterviewer, string? searchRecruiter, DateTime? filterDate, string? filterStatus)
+        public async Task<IActionResult> Index(string? searchCandidate, string? searchInterviewer, string? searchRecruiter, DateTime? filterDate, string? filterStatus, int page = 1, int pageSize = 10)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (string.IsNullOrEmpty(role)) return RedirectToAction("Login", "Account");
@@ -61,8 +62,38 @@ namespace TalentTrack.Controllers
                 query = query.Where(i => i.Status == filterStatus);
             }
 
-            var interviews = query.OrderByDescending(i => i.InterviewDate).ToList();
-            return View(interviews);
+            var totalItems = await query.CountAsync();
+
+            // Ensure bounds for page
+            if (page < 1) page = 1;
+
+            if (pageSize == -1)
+            {
+                pageSize = totalItems > 0 ? totalItems : 10;
+            }
+            else if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var items = await query
+                .OrderByDescending(i => i.InterviewDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var pagedList = new PagedList<Interview>(items, totalItems, page, pageSize);
+
+            // Pass stats to ViewBag for statistics card in the view
+            ViewBag.TotalInterviewsCount = totalItems;
+            ViewBag.TodayInterviewsCount = await _context.Interviews.CountAsync(i => i.InterviewDate.Date == DateTime.Today);
+            ViewBag.CompletedInterviewsCount = await _context.Interviews.CountAsync(i => i.Status == "Completed");
+            ViewBag.PendingInterviewsCount = await _context.Interviews.CountAsync(i => i.Status == "Pending" || i.Status == "Scheduled");
+
+            return View(pagedList);
         }
 
         // Open Schedule Interview Page

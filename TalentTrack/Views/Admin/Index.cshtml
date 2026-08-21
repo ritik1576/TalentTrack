@@ -1,7 +1,8 @@
 @{
     ViewData["Title"] = "Admin Control Panel";
     var pendingUsers = ViewBag.PendingUsers as List<TalentTrack.Models.Recruiter> ?? new List<TalentTrack.Models.Recruiter>();
-    var approvedUsers = ViewBag.ApprovedUsers as List<TalentTrack.Models.Recruiter> ?? new List<TalentTrack.Models.Recruiter>();
+    var approvedUsersPaged = ViewBag.ApprovedUsersPaged as TalentTrack.Models.DTOs.PagedList<TalentTrack.Models.Recruiter> ?? new TalentTrack.Models.DTOs.PagedList<TalentTrack.Models.Recruiter>();
+    var approvedUsers = approvedUsersPaged.Items;
 }
 
 <div class="container-fluid">
@@ -191,6 +192,11 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination UI -->
+            @if (approvedUsersPaged != null)
+            {
+                <partial name="_Pagination" model="approvedUsersPaged.Metadata" />
+            }
         </div>
     </div>
 

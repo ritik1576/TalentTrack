@@ -19,10 +19,52 @@ namespace TalentTrack.Controllers
         }
 
         // Show all candidates
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? search, string? filterSkill, int page = 1, int pageSize = 10)
         {
-            var candidates = _context.Candidates.Include(c => c.CandidateSkills).ToList();
-            return View(candidates);
+            var query = _context.Candidates.Include(c => c.CandidateSkills).AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowerSearch = search.ToLower().Trim();
+                query = query.Where(c => c.Name != null && c.Name.ToLower().Contains(lowerSearch) || 
+                                         c.Email != null && c.Email.ToLower().Contains(lowerSearch));
+            }
+
+            if (!string.IsNullOrEmpty(filterSkill))
+            {
+                var lowerSkill = filterSkill.ToLower().Trim();
+                query = query.Where(c => c.Skills != null && c.Skills.ToLower().Contains(lowerSkill));
+            }
+
+            var totalItems = await query.CountAsync();
+
+            // Ensure bounds for page
+            if (page < 1) page = 1;
+
+            if (pageSize == -1)
+            {
+                pageSize = totalItems > 0 ? totalItems : 10;
+            }
+            else if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var items = await query
+                .OrderBy(c => c.CandidateId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var pagedList = new PagedList<Candidate>(items, totalItems, page, pageSize);
+
+            ViewBag.Search = search;
+            ViewBag.FilterSkill = filterSkill;
+
+            return View(pagedList);
         }
 
         // Check duplicate candidate and return details - GET

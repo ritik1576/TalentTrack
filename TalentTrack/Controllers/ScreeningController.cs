@@ -16,57 +16,104 @@ namespace TalentTrack.Controllers
         }
 
         // Screening Dashboard
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? searchCandidate, int? filterJob, int page = 1, int pageSize = 10)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (role != "Recruiter" && role != "Admin") return RedirectToAction("Login", "Account");
 
-            var applications = _context.CandidateApplications
+            var query = _context.CandidateApplications
                 .Include(ca => ca.Candidate)
                 .Include(ca => ca.Job)
-                .OrderByDescending(ca => ca.AppliedDate)
-                .ToList();
+                .AsQueryable();
 
-            var screenings = _context.Screenings.ToList();
-            var candidates = _context.Candidates.ToList();
+            if (!string.IsNullOrEmpty(searchCandidate))
+            {
+                var lowerSearch = searchCandidate.ToLower().Trim();
+                query = query.Where(ca => ca.Candidate != null && ca.Candidate.Name.ToLower().Contains(lowerSearch));
+            }
+
+            if (filterJob.HasValue)
+            {
+                query = query.Where(ca => ca.JobId == filterJob.Value);
+            }
+
+            query = query.OrderByDescending(ca => ca.AppliedDate);
+
+            var totalItems = await query.CountAsync();
+
+            // Ensure bounds for page
+            if (page < 1) page = 1;
+
+            if (pageSize == -1)
+            {
+                pageSize = totalItems > 0 ? totalItems : 10;
+            }
+            else if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var applications = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var screenings = await _context.Screenings.ToListAsync();
+            var candidates = await _context.Candidates.ToListAsync();
+
+            var dashboardItems = applications.Select(a => {
+                var duplicateReason = "";
+                var isDup = false;
+                if (a.Candidate != null) {
+                    var dupEmail = !string.IsNullOrEmpty(a.Candidate.Email) && 
+                        candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Email.ToLower() == a.Candidate.Email.ToLower());
+                    var dupPhone = !string.IsNullOrEmpty(a.Candidate.Phone) && 
+                        candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Phone == a.Candidate.Phone);
+                    if (dupEmail && dupPhone) {
+                        duplicateReason = "Email & Contact No. already exist";
+                        isDup = true;
+                    } else if (dupEmail) {
+                        duplicateReason = "Email already exists";
+                        isDup = true;
+                    } else if (dupPhone) {
+                        duplicateReason = "Contact No. already exists";
+                        isDup = true;
+                    }
+                }
+                return new ScreeningDashboardItem
+                {
+                    ApplicationId = a.ApplicationId,
+                    CandidateName = a.Candidate?.Name ?? "N/A",
+                    JobTitle = a.Job?.JobTitle ?? "N/A",
+                    AppliedDate = a.AppliedDate,
+                    ApplicationStatus = a.Status,
+                    ScreeningStatus = screenings.Any(s => s.ApplicationId == a.ApplicationId)
+                        ? screenings.Where(s => s.ApplicationId == a.ApplicationId)
+                            .OrderByDescending(s => s.ScreeningDate).First().Status
+                        : "Not Started",
+                    IsDuplicate = isDup,
+                    DuplicateReason = duplicateReason
+                };
+            }).ToList();
 
             var vm = new ScreeningDashboardViewModel
             {
-                Applications = applications.Select(a => {
-                    var duplicateReason = "";
-                    var isDup = false;
-                    if (a.Candidate != null) {
-                        var dupEmail = !string.IsNullOrEmpty(a.Candidate.Email) && 
-                            candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Email.ToLower() == a.Candidate.Email.ToLower());
-                        var dupPhone = !string.IsNullOrEmpty(a.Candidate.Phone) && 
-                            candidates.Any(c => c.CandidateId != a.Candidate.CandidateId && c.Phone == a.Candidate.Phone);
-                        if (dupEmail && dupPhone) {
-                            duplicateReason = "Email & Contact No. already exist";
-                            isDup = true;
-                        } else if (dupEmail) {
-                            duplicateReason = "Email already exists";
-                            isDup = true;
-                        } else if (dupPhone) {
-                            duplicateReason = "Contact No. already exists";
-                            isDup = true;
-                        }
-                    }
-                    return new ScreeningDashboardItem
-                    {
-                        ApplicationId = a.ApplicationId,
-                        CandidateName = a.Candidate?.Name ?? "N/A",
-                        JobTitle = a.Job?.JobTitle ?? "N/A",
-                        AppliedDate = a.AppliedDate,
-                        ApplicationStatus = a.Status,
-                        ScreeningStatus = screenings.Any(s => s.ApplicationId == a.ApplicationId)
-                            ? screenings.Where(s => s.ApplicationId == a.ApplicationId)
-                                .OrderByDescending(s => s.ScreeningDate).First().Status
-                            : "Not Started",
-                        IsDuplicate = isDup,
-                        DuplicateReason = duplicateReason
-                    };
-                }).ToList()
+                Applications = dashboardItems,
+                Metadata = new PaginationMetadata
+                {
+                    TotalItems = totalItems,
+                    PageSize = pageSize,
+                    CurrentPage = page,
+                    TotalPages = totalPages
+                }
             };
+
+            ViewBag.Jobs = await _context.Jobs.ToListAsync();
+            ViewBag.SearchCandidate = searchCandidate;
+            ViewBag.FilterJob = filterJob;
 
             return View(vm);
         }

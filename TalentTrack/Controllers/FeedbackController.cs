@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TalentTrack.Data;
 using TalentTrack.Models;
 using TalentTrack.Services;
+using TalentTrack.Models.DTOs;
 
 namespace TalentTrack.Controllers
 {
@@ -18,7 +19,7 @@ namespace TalentTrack.Controllers
         }
 
         // Recruiter & Admin view — all feedbacks or filtered by interviewer
-        public IActionResult Index()
+        public async Task<IActionResult> Index(string? searchCandidate, string? filterRecommendation, int page = 1, int pageSize = 10)
         {
             var role = HttpContext.Session.GetString("UserRole");
             if (string.IsNullOrEmpty(role)) return RedirectToAction("Login", "Account");
@@ -41,12 +42,48 @@ namespace TalentTrack.Controllers
                 }
             }
 
-            var feedbacks = query.OrderByDescending(f => f.CreatedAt).ToList();
+            if (!string.IsNullOrEmpty(searchCandidate))
+            {
+                query = query.Where(f => f.Candidate != null && f.Candidate.Name.Contains(searchCandidate));
+            }
 
-            var applications = _context.CandidateApplications.ToList();
+            if (!string.IsNullOrEmpty(filterRecommendation))
+            {
+                query = query.Where(f => f.Recommendation == filterRecommendation);
+            }
+
+            var totalItems = await query.CountAsync();
+
+            // Ensure bounds for page
+            if (page < 1) page = 1;
+
+            if (pageSize == -1)
+            {
+                pageSize = totalItems > 0 ? totalItems : 10;
+            }
+            else if (pageSize < 1)
+            {
+                pageSize = 10;
+            }
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var items = await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var pagedList = new PagedList<InterviewFeedback>(items, totalItems, page, pageSize);
+
+            var applications = await _context.CandidateApplications.ToListAsync();
             ViewBag.Applications = applications;
 
-            return View(feedbacks);
+            ViewBag.SearchCandidate = searchCandidate;
+            ViewBag.FilterRecommendation = filterRecommendation;
+
+            return View(pagedList);
         }
 
         // Interviewer submits feedback for an interview
